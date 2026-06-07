@@ -42,7 +42,7 @@ public sealed class OpenAiRequestBuilder
                 new JsonObject
                 {
                     ["role"] = "system",
-                    ["content"] = "You are the question engine for TrivAI. Reply only with JSON that matches the schema."
+                    ["content"] = "You are the question engine for LearnAi. Reply only with JSON that matches the schema."
                 },
                 new JsonObject
                 {
