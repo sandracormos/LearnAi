@@ -1,1 +1,1 @@
-{"root":["./src/firebase.ts","./src/main.tsx","./src/vite-env.d.ts"],"version":"5.9.3"}
+{"root":["./src/firebase.ts","./src/main.tsx","./src/vite-env.d.ts","./src/components/ui/connection-error-page.tsx","./src/components/ui/trivai-dock.tsx"],"version":"5.9.3"}

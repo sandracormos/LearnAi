@@ -11,6 +11,7 @@ import {
 import {
   addDoc,
   collection,
+  deleteDoc,
   doc,
   getDoc,
   getDocs,
@@ -19,7 +20,8 @@ import {
   orderBy,
   query,
   serverTimestamp,
-  setDoc
+  setDoc,
+  where
 } from 'firebase/firestore';
 
 const firebaseConfig = {
@@ -95,6 +97,29 @@ export type CompletedSession = {
 export type SessionSummary = CompletedSession & {
   id: string;
   completedAt?: Date;
+};
+
+export type CustomTestQuestion = {
+  prompt: string;
+  answers: string[];
+  correctAnswer: number;
+};
+
+export type CustomTestDraft = {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  visibility: string;
+  status: 'draft' | 'published';
+  questions: CustomTestQuestion[];
+  updatedAt?: Date;
+  publishedAt?: Date;
+};
+
+export type PublishedTest = CustomTestDraft & {
+  authorId: string;
+  authorName: string;
 };
 
 function requireFirebase() {
@@ -406,6 +431,139 @@ export async function getRecentSessions(user: User, maxCount = 5): Promise<Sessi
       completedAt
     };
   });
+}
+
+export async function saveCustomTestDraft(user: User, draft: CustomTestDraft): Promise<CustomTestDraft> {
+  const { db } = requireFirebase();
+  const draftRef = draft.id
+    ? doc(db, 'users', user.uid, 'customTests', draft.id)
+    : doc(collection(db, 'users', user.uid, 'customTests'));
+
+  await setDoc(
+    draftRef,
+    {
+      title: draft.title,
+      description: draft.description,
+      category: draft.category,
+      visibility: draft.visibility,
+      status: draft.status,
+      questions: draft.questions,
+      updatedAt: serverTimestamp(),
+      ...(draft.status === 'published' ? { publishedAt: serverTimestamp() } : {})
+    },
+    { merge: true }
+  );
+
+  const publishedRef = doc(db, 'publishedTests', draftRef.id);
+
+  if (draft.status === 'published') {
+    await setDoc(publishedRef, {
+      authorId: user.uid,
+      authorName: fallbackName(user),
+      title: draft.title,
+      description: draft.description,
+      category: draft.category,
+      visibility: draft.visibility,
+      status: 'published' as const,
+      questions: draft.questions,
+      updatedAt: serverTimestamp(),
+      publishedAt: serverTimestamp()
+    });
+  }
+
+  return {
+    ...draft,
+    id: draftRef.id,
+    updatedAt: new Date()
+  };
+}
+
+export async function getPublishedTests(user: User): Promise<PublishedTest[]> {
+  const { db } = requireFirebase();
+  const publishedTestsRef = collection(db, 'publishedTests');
+  const [publicSnapshot, ownSnapshot] = await Promise.all([
+    getDocs(query(publishedTestsRef, where('visibility', '==', 'Public'))),
+    getDocs(query(publishedTestsRef, where('authorId', '==', user.uid)))
+  ]);
+  const entries = new Map([...publicSnapshot.docs, ...ownSnapshot.docs].map((entry) => [entry.id, entry]));
+
+  return [...entries.values()].map((entry) => {
+    const data = entry.data();
+    const questions = Array.isArray(data.questions)
+      ? data.questions.map((question: Record<string, unknown>) => ({
+          prompt: String(question.prompt ?? ''),
+          answers: Array.isArray(question.answers)
+            ? question.answers.map((answer) => String(answer))
+            : [],
+          correctAnswer: Number(question.correctAnswer ?? 0)
+        }))
+      : [];
+
+    return {
+      id: entry.id,
+      authorId: String(data.authorId ?? ''),
+      authorName: String(data.authorName ?? 'Player'),
+      title: String(data.title ?? ''),
+      description: String(data.description ?? ''),
+      category: String(data.category ?? ''),
+      visibility: String(data.visibility ?? 'Private'),
+      status: 'published' as const,
+      questions,
+      updatedAt: data.updatedAt && typeof data.updatedAt.toDate === 'function'
+        ? data.updatedAt.toDate()
+        : undefined,
+      publishedAt: data.publishedAt && typeof data.publishedAt.toDate === 'function'
+        ? data.publishedAt.toDate()
+        : undefined
+    };
+  }).sort((left, right) => (right.updatedAt?.getTime() ?? 0) - (left.updatedAt?.getTime() ?? 0));
+}
+
+export async function getCustomTestDrafts(user: User): Promise<CustomTestDraft[]> {
+  const { db } = requireFirebase();
+  const draftsQuery = query(
+    collection(db, 'users', user.uid, 'customTests'),
+    orderBy('updatedAt', 'desc')
+  );
+  const snapshot = await getDocs(draftsQuery);
+
+  return snapshot.docs.map((entry) => {
+    const data = entry.data();
+    const questions = Array.isArray(data.questions)
+      ? data.questions.map((question: Record<string, unknown>) => ({
+          prompt: String(question.prompt ?? ''),
+          answers: Array.isArray(question.answers)
+            ? question.answers.map((answer) => String(answer))
+            : ['', '', '', ''],
+          correctAnswer: Number(question.correctAnswer ?? 0)
+        }))
+      : [];
+
+    return {
+      id: entry.id,
+      title: String(data.title ?? ''),
+      description: String(data.description ?? ''),
+      category: String(data.category ?? ''),
+      visibility: String(data.visibility ?? 'Private'),
+      status: data.status === 'published' ? 'published' : 'draft',
+      questions,
+      updatedAt: data.updatedAt && typeof data.updatedAt.toDate === 'function'
+        ? data.updatedAt.toDate()
+        : undefined,
+      publishedAt: data.publishedAt && typeof data.publishedAt.toDate === 'function'
+        ? data.publishedAt.toDate()
+        : undefined
+    };
+  });
+}
+
+export async function deleteCustomTest(user: User, testId: string) {
+  const { db } = requireFirebase();
+
+  await Promise.all([
+    deleteDoc(doc(db, 'users', user.uid, 'customTests', testId)),
+    deleteDoc(doc(db, 'publishedTests', testId))
+  ]);
 }
 
 export async function getLeaderboard(): Promise<LeaderboardEntry[]> {

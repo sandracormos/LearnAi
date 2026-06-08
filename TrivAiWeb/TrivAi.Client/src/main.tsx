@@ -3,7 +3,10 @@ import { createRoot } from 'react-dom/client';
 import { onAuthStateChanged, type User } from 'firebase/auth';
 import {
   auth,
+  deleteCustomTest,
   getLeaderboard,
+  getCustomTestDrafts,
+  getPublishedTests,
   getRecentSessions,
   getUserProfile,
   isFirebaseConfigured,
@@ -12,10 +15,14 @@ import {
   registerWithEmail,
   resetPassword,
   saveCompletedSession,
+  saveCustomTestDraft,
   saveOpenAiPreviousResponseId,
   updateUserProfileSettings,
   defaultAvatar,
   type AvatarConfig,
+  type CustomTestDraft,
+  type CustomTestQuestion,
+  type PublishedTest,
   type LeaderboardEntry,
   type SessionSummary,
   type UserProfile
@@ -35,6 +42,8 @@ import lipsMouthImage from './assets/avatar/items/mouth/NicePng_lips-png_67937.p
 import smileMouthImage from './assets/avatar/items/mouth/smile-clip-art-24.png';
 import smallSmileMouthImage from './assets/avatar/items/mouth/smile-clip-art-73.png';
 import heroImage from './assets/trivai-hero.png';
+import { ConnectionErrorPage } from './components/ui/connection-error-page';
+import { TrivAiDock } from './components/ui/trivai-dock';
 import './styles.css';
 
 type Difficulty = 'Easy' | 'Medium' | 'Hard';
@@ -66,7 +75,11 @@ type UsedHelpers = {
 };
 
 type AuthMode = 'login' | 'register';
-type AppView = 'setup' | 'dashboard' | 'settings';
+type AppView = 'setup' | 'custom-test' | 'upload-test' | 'my-tests' | 'user-tests' | 'dashboard' | 'settings';
+type ConnectionIssue = {
+  service: 'Firebase' | 'OpenAI';
+  message: string;
+};
 
 type AvatarOption = {
   id: string;
@@ -404,6 +417,33 @@ function App() {
   });
   const [settingsSaving, setSettingsSaving] = useState(false);
   const [settingsMessage, setSettingsMessage] = useState('');
+  const [customTest, setCustomTest] = useState({
+    title: '',
+    description: '',
+    category: '',
+    visibility: 'Private',
+    questions: [
+      {
+        prompt: '',
+        answers: ['', '', '', ''],
+        correctAnswer: 0
+      }
+    ] as CustomTestQuestion[]
+  });
+  const [customTestMessage, setCustomTestMessage] = useState('');
+  const [customTestId, setCustomTestId] = useState('');
+  const [customTestStatus, setCustomTestStatus] = useState<'draft' | 'published'>('draft');
+  const [customTestSaving, setCustomTestSaving] = useState(false);
+  const [deletingCustomTestId, setDeletingCustomTestId] = useState('');
+  const [customTestDrafts, setCustomTestDrafts] = useState<CustomTestDraft[]>([]);
+  const [publishedTests, setPublishedTests] = useState<PublishedTest[]>([]);
+  const [activePublishedTest, setActivePublishedTest] = useState<PublishedTest | null>(null);
+  const [publishedQuestionIndex, setPublishedQuestionIndex] = useState(0);
+  const [publishedSelectedAnswer, setPublishedSelectedAnswer] = useState<number | null>(null);
+  const [publishedAnswerSubmitted, setPublishedAnswerSubmitted] = useState(false);
+  const [publishedTestScore, setPublishedTestScore] = useState(0);
+  const [userTestsFilter, setUserTestsFilter] = useState<'all' | 'mine'>('all');
+  const [uploadedTestFile, setUploadedTestFile] = useState<File | null>(null);
   const [saveStatus, setSaveStatus] = useState('');
   const [sessionSaved, setSessionSaved] = useState(false);
   const [setup, setSetup] = useState<GameSetup>({
@@ -433,6 +473,7 @@ function App() {
   const [preloading, setPreloading] = useState(false);
   const [error, setError] = useState('');
   const [showQuitDialog, setShowQuitDialog] = useState(false);
+  const [connectionIssue, setConnectionIssue] = useState<ConnectionIssue | null>(null);
   const openAiPreviousResponseIdRef = useRef<string | undefined>(undefined);
 
   const totalQuestions = game ? durationToQuestions[game.duration] : durationToQuestions[setup.duration];
@@ -462,6 +503,8 @@ function App() {
         setProfile(null);
         setLeaderboard([]);
         setRecentSessions([]);
+        setCustomTestDrafts([]);
+        setPublishedTests([]);
         setAppView('setup');
         openAiPreviousResponseIdRef.current = undefined;
         return;
@@ -479,16 +522,21 @@ function App() {
     setProfileLoading(true);
 
     try {
-      const [loadedProfile, loadedLeaderboard, loadedSessions] = await Promise.all([
+      const [loadedProfile, loadedLeaderboard, loadedSessions, loadedCustomTests, loadedPublishedTests] = await Promise.all([
         getUserProfile(user),
         getLeaderboard(),
-        getRecentSessions(user)
+        getRecentSessions(user),
+        getCustomTestDrafts(user),
+        getPublishedTests(user)
       ]);
 
       setProfile(loadedProfile);
+      setConnectionIssue(null);
       openAiPreviousResponseIdRef.current = loadedProfile.openAiPreviousResponseId;
       setLeaderboard(loadedLeaderboard);
       setRecentSessions(loadedSessions);
+      setCustomTestDrafts(loadedCustomTests);
+      setPublishedTests(loadedPublishedTests);
       setScore(loadedProfile.score);
       setLevel(loadedProfile.level);
       setSetup((current) => ({
@@ -500,7 +548,9 @@ function App() {
         avatar: loadedProfile.avatar
       });
     } catch (err) {
-      setAuthMessage(err instanceof Error ? err.message : 'Could not load Firebase data.');
+      const message = err instanceof Error ? err.message : 'Could not load Firebase data.';
+      setAuthMessage(message);
+      setConnectionIssue({ service: 'Firebase', message });
     } finally {
       setProfileLoading(false);
     }
@@ -555,13 +605,16 @@ function App() {
 
     try {
       const nextQuestion = await requestQuestion(activeSetup, history);
+      setConnectionIssue(null);
       const nextHistory = [nextQuestion.questionName, ...history].slice(0, 10);
       setQuestion(nextQuestion);
       setPreviousQuestions(nextHistory);
       preloadQuestion(activeSetup, nextHistory);
     } catch (err) {
       setQuestion(null);
-      setError(err instanceof Error ? err.message : 'Something went wrong.');
+      const message = err instanceof Error ? err.message : 'Something went wrong.';
+      setError(message);
+      setConnectionIssue({ service: 'OpenAI', message });
     } finally {
       setLoading(false);
     }
@@ -832,50 +885,216 @@ function App() {
 
   function renderHotbar() {
     return (
-      <nav className="hotbar" aria-label="Player navigation">
-        <div className="hotbar-player">
-          <LocalAvatar avatar={profile?.avatar} label={profile?.displayName ?? currentUser?.email ?? 'Player'} />
-          <div>
-            <p className="eyebrow">Player</p>
-            <strong>{profile?.displayName ?? currentUser?.email}</strong>
+      <>
+        <nav className="hotbar" aria-label="Player navigation">
+          <div className="hotbar-player">
+            <LocalAvatar avatar={profile?.avatar} label={profile?.displayName ?? currentUser?.email ?? 'Player'} />
+            <div>
+              <p className="eyebrow">Player</p>
+              <strong>{profile?.displayName ?? currentUser?.email}</strong>
+            </div>
           </div>
-        </div>
 
-        <div className="hotbar-stats">
-          <span>Level {profile?.level ?? 1}</span>
-          <span>Best score {profile?.bestPlatformScore ?? 0}</span>
-          <span>{profile?.currentStreak ?? 0} day streak</span>
-          <span>{profile?.gamesPlayed ?? 0} games</span>
-        </div>
+          <div className="hotbar-stats">
+            <span>Level {profile?.level ?? 1}</span>
+            <span>Best score {profile?.bestPlatformScore ?? 0}</span>
+            <span>{profile?.currentStreak ?? 0} day streak</span>
+            <span>{profile?.gamesPlayed ?? 0} games</span>
+          </div>
 
-        <div className="hotbar-actions">
-          <button
-            className={appView === 'setup' ? 'compact' : 'secondary compact'}
-            type="button"
-            onClick={() => setAppView('setup')}
-          >
-            Play
-          </button>
-          <button
-            className={appView === 'dashboard' ? 'compact' : 'secondary compact'}
-            type="button"
-            onClick={() => setAppView('dashboard')}
-          >
-            Dashboard
-          </button>
-          <button
-            className={appView === 'settings' ? 'compact' : 'secondary compact'}
-            type="button"
-            onClick={() => setAppView('settings')}
-          >
-            Account
-          </button>
-          <button className="secondary compact" type="button" onClick={handleLogout}>
-            Sign out
-          </button>
-        </div>
-      </nav>
+          <div className="hotbar-actions">
+            <button
+              className={appView === 'setup' ? 'compact' : 'secondary compact'}
+              type="button"
+              onClick={() => setAppView('setup')}
+            >
+              Play
+            </button>
+            <button className="secondary compact" type="button" onClick={handleLogout}>
+              Sign out
+            </button>
+          </div>
+        </nav>
+        <TrivAiDock
+          activeApp={appView}
+          apps={[
+            { id: 'custom-test', name: 'Create test', icon: '+' },
+            { id: 'upload-test', name: 'Upload test', icon: 'UP' },
+            { id: 'my-tests', name: 'My Tests', icon: 'M' },
+            { id: 'user-tests', name: 'User Tests', icon: 'U' },
+            { id: 'dashboard', name: 'Dashboard', icon: 'D' },
+            { id: 'settings', name: 'Account', icon: 'A' }
+          ]}
+          onAppClick={(appId) => {
+            if (appId === 'user-tests') {
+              setActivePublishedTest(null);
+            }
+            setAppView(appId as AppView);
+          }}
+        />
+      </>
     );
+  }
+
+  function updateCustomQuestion(index: number, update: Partial<CustomTestQuestion>) {
+    setCustomTest((current) => ({
+      ...current,
+      questions: current.questions.map((question, questionIndex) =>
+        questionIndex === index ? { ...question, ...update } : question
+      )
+    }));
+    setCustomTestMessage('');
+  }
+
+  function updateCustomAnswer(questionIndex: number, answerIndex: number, value: string) {
+    const question = customTest.questions[questionIndex];
+    updateCustomQuestion(questionIndex, {
+      answers: question.answers.map((answer, index) => (index === answerIndex ? value : answer))
+    });
+  }
+
+  function addCustomQuestion() {
+    setCustomTest((current) => ({
+      ...current,
+      questions: [
+        ...current.questions,
+        { prompt: '', answers: ['', '', '', ''], correctAnswer: 0 }
+      ]
+    }));
+    setCustomTestMessage('');
+  }
+
+  function removeCustomQuestion(index: number) {
+    setCustomTest((current) => ({
+      ...current,
+      questions: current.questions.filter((_, questionIndex) => questionIndex !== index)
+    }));
+    setCustomTestMessage('');
+  }
+
+  function openCustomTestDraft(draft: CustomTestDraft) {
+    setCustomTestId(draft.id);
+    setCustomTestStatus(draft.status);
+    setCustomTest({
+      title: draft.title,
+      description: draft.description,
+      category: draft.category,
+      visibility: draft.visibility,
+      questions: draft.questions.length > 0
+        ? draft.questions
+        : [{ prompt: '', answers: ['', '', '', ''], correctAnswer: 0 }]
+    });
+    setCustomTestMessage('');
+    setAppView('custom-test');
+  }
+
+  function startNewCustomTest() {
+    setCustomTestId('');
+    setCustomTestStatus('draft');
+    setCustomTest({
+      title: '',
+      description: '',
+      category: '',
+      visibility: 'Private',
+      questions: [{ prompt: '', answers: ['', '', '', ''], correctAnswer: 0 }]
+    });
+    setCustomTestMessage('');
+    setAppView('custom-test');
+  }
+
+  async function handleSaveCustomTest(status: 'draft' | 'published') {
+    if (!currentUser) {
+      return;
+    }
+
+    if (!customTest.title.trim()) {
+      setCustomTestMessage(`Add a title before ${status === 'published' ? 'publishing' : 'saving the draft'}.`);
+      return;
+    }
+
+    const isComplete = customTest.questions.length > 0 && customTest.questions.every(
+      (question) => question.prompt.trim() && question.answers.every((answer) => answer.trim())
+    );
+
+    if (status === 'published' && !isComplete) {
+      setCustomTestMessage('Complete every question and answer before publishing.');
+      return;
+    }
+
+    setCustomTestSaving(true);
+    setCustomTestMessage('');
+
+    try {
+      const savedDraft = await saveCustomTestDraft(currentUser, {
+        id: customTestId,
+        ...customTest,
+        title: customTest.title.trim(),
+        visibility: customTest.visibility,
+        status
+      });
+      setCustomTestId(savedDraft.id);
+      setCustomTestStatus(savedDraft.status);
+      setCustomTest((current) => ({ ...current, visibility: savedDraft.visibility }));
+      setCustomTestDrafts(await getCustomTestDrafts(currentUser));
+      setPublishedTests(await getPublishedTests(currentUser));
+      setCustomTestMessage(status === 'published' ? 'Test published.' : 'Draft saved in My Tests.');
+    } catch (err) {
+      setCustomTestMessage(err instanceof Error ? err.message : 'Could not save draft.');
+    } finally {
+      setCustomTestSaving(false);
+    }
+  }
+
+  async function handleDeleteCustomTest(draft: CustomTestDraft) {
+    if (!currentUser || !window.confirm(`Delete "${draft.title || 'Untitled test'}"? This cannot be undone.`)) {
+      return;
+    }
+
+    setDeletingCustomTestId(draft.id);
+
+    try {
+      await deleteCustomTest(currentUser, draft.id);
+      setCustomTestDrafts((drafts) => drafts.filter((item) => item.id !== draft.id));
+      setPublishedTests((tests) => tests.filter((item) => item.id !== draft.id));
+
+      if (customTestId === draft.id) {
+        startNewCustomTest();
+      }
+    } catch (err) {
+      setAuthMessage(err instanceof Error ? err.message : 'Could not delete test.');
+    } finally {
+      setDeletingCustomTestId('');
+    }
+  }
+
+  function startPublishedTest(test: PublishedTest) {
+    setActivePublishedTest(test);
+    setPublishedQuestionIndex(0);
+    setPublishedSelectedAnswer(null);
+    setPublishedAnswerSubmitted(false);
+    setPublishedTestScore(0);
+  }
+
+  function submitPublishedAnswer() {
+    if (!activePublishedTest || publishedSelectedAnswer === null) {
+      return;
+    }
+
+    const activeQuestion = activePublishedTest.questions[publishedQuestionIndex];
+    if (publishedSelectedAnswer === activeQuestion.correctAnswer) {
+      setPublishedTestScore((score) => score + 1);
+    }
+    setPublishedAnswerSubmitted(true);
+  }
+
+  function nextPublishedQuestion() {
+    if (!activePublishedTest) {
+      return;
+    }
+
+    setPublishedQuestionIndex((index) => index + 1);
+    setPublishedSelectedAnswer(null);
+    setPublishedAnswerSubmitted(false);
   }
 
   function renderSiteHeader() {
@@ -968,22 +1187,11 @@ function App() {
 
   if (!isFirebaseConfigured) {
     return (
-      <main className="site-shell" id="top">
-        {renderSiteHeader()}
-        <section className="site-hero single-hero">
-          <div className="hero-copy-block">
-            <p className="eyebrow">Firebase setup</p>
-            <h1>Connect Firebase before playing.</h1>
-            <p className="hero-copy">
-              Create a Firebase web app, enable Email/Password Authentication and Cloud Firestore, then fill the
-              `VITE_FIREBASE_*` values in `TrivAi.Client/.env`.
-            </p>
-          </div>
-          <figure className="hero-visual">
-            <img src={heroImage} alt="" />
-          </figure>
-        </section>
-      </main>
+      <ConnectionErrorPage
+        service="Firebase"
+        message="Configure the VITE_FIREBASE_* values in TrivAi.Client/.env, then restart the client."
+        onHome={() => window.location.reload()}
+      />
     );
   }
 
@@ -995,6 +1203,28 @@ function App() {
           <p>Loading your player profile...</p>
         </section>
       </main>
+    );
+  }
+
+  if (connectionIssue) {
+    return (
+      <ConnectionErrorPage
+        service={connectionIssue.service}
+        message={connectionIssue.message}
+        onRetry={() => {
+          setConnectionIssue(null);
+          if (connectionIssue.service === 'Firebase') {
+            void loadUserData();
+          } else if (game) {
+            void fetchQuestion(game);
+          }
+        }}
+        onHome={() => {
+          setConnectionIssue(null);
+          quitQuiz();
+          setAppView('setup');
+        }}
+      />
     );
   }
 
@@ -1105,6 +1335,418 @@ function App() {
             <span>OpenAI Responses</span>
           </div>
         </section>
+      </main>
+    );
+  }
+
+  if (!game && appView === 'custom-test') {
+    const completedQuestions = customTest.questions.filter(
+      (question) => question.prompt.trim() && question.answers.every((answer) => answer.trim())
+    ).length;
+
+    return (
+      <main className="app-shell logged-in-shell">
+        {renderHotbar()}
+        <section className="custom-test-header">
+          <div>
+            <p className="eyebrow">Test creator</p>
+            <h1>Create your own challenge.</h1>
+            <p className="hero-copy">
+              Build a reusable test for friends, classmates, or a future public quiz library.
+            </p>
+          </div>
+          <div className="custom-test-progress">
+            <strong>{completedQuestions}/{customTest.questions.length}</strong>
+            <span>questions ready</span>
+          </div>
+        </section>
+
+        <section className="custom-test-layout">
+          <div className="custom-test-main">
+            <section className="panel custom-test-details">
+              <div>
+                <p className="eyebrow">Test details</p>
+                <h2>Start with the basics</h2>
+              </div>
+              <label>
+                Test title
+                <input
+                  value={customTest.title}
+                  onChange={(event) => {
+                    setCustomTest({ ...customTest, title: event.target.value });
+                    setCustomTestMessage('');
+                  }}
+                  placeholder="Example: European capitals"
+                />
+              </label>
+              <label>
+                Description
+                <textarea
+                  value={customTest.description}
+                  onChange={(event) => setCustomTest({ ...customTest, description: event.target.value })}
+                  placeholder="What should players expect from this test?"
+                  rows={3}
+                />
+              </label>
+              <div className="grid-two">
+                <label>
+                  Category
+                  <input
+                    value={customTest.category}
+                    onChange={(event) => setCustomTest({ ...customTest, category: event.target.value })}
+                    placeholder="Geography"
+                  />
+                </label>
+                <label>
+                  Visibility
+                  <select
+                    value={customTest.visibility}
+                    onChange={(event) => setCustomTest({ ...customTest, visibility: event.target.value })}
+                  >
+                    <option>Private</option>
+                    <option>Unlisted</option>
+                    <option>Public</option>
+                  </select>
+                </label>
+              </div>
+            </section>
+
+            <div className="custom-question-list">
+              {customTest.questions.map((question, questionIndex) => (
+                <section className="panel custom-question-card" key={questionIndex}>
+                  <div className="brand-row">
+                    <div>
+                      <p className="eyebrow">Question {questionIndex + 1}</p>
+                      <h2>{question.prompt.trim() || 'Untitled question'}</h2>
+                    </div>
+                    {customTest.questions.length > 1 && (
+                      <button
+                        className="secondary compact"
+                        type="button"
+                        onClick={() => removeCustomQuestion(questionIndex)}
+                      >
+                        Remove
+                      </button>
+                    )}
+                  </div>
+                  <label>
+                    Question
+                    <textarea
+                      value={question.prompt}
+                      onChange={(event) => updateCustomQuestion(questionIndex, { prompt: event.target.value })}
+                      placeholder="Write your question here"
+                      rows={2}
+                    />
+                  </label>
+                  <div className="custom-answer-grid">
+                    {question.answers.map((answer, answerIndex) => (
+                      <label className="custom-answer" key={answerIndex}>
+                        <span>
+                          <input
+                            checked={question.correctAnswer === answerIndex}
+                            name={`correct-answer-${questionIndex}`}
+                            type="radio"
+                            onChange={() => updateCustomQuestion(questionIndex, { correctAnswer: answerIndex })}
+                          />
+                          Answer {answerIndex + 1}
+                        </span>
+                        <input
+                          value={answer}
+                          onChange={(event) => updateCustomAnswer(questionIndex, answerIndex, event.target.value)}
+                          placeholder={answerIndex === question.correctAnswer ? 'Correct answer' : 'Answer option'}
+                        />
+                      </label>
+                    ))}
+                  </div>
+                </section>
+              ))}
+            </div>
+
+            <button className="secondary custom-add-question" type="button" onClick={addCustomQuestion}>
+              Add another question
+            </button>
+          </div>
+
+          <aside className="panel custom-test-sidebar">
+            <div>
+              <p className="eyebrow">Draft overview</p>
+              <h2>{customTest.title.trim() || 'Untitled test'}</h2>
+              <p className="muted">{customTest.description.trim() || 'Add a short description for your players.'}</p>
+            </div>
+            <div className="dashboard-grid">
+              <div className="dashboard-stat">
+                <p className="eyebrow">Questions</p>
+                <strong>{customTest.questions.length}</strong>
+              </div>
+              <div className="dashboard-stat">
+                <p className="eyebrow">Ready</p>
+                <strong>{completedQuestions}</strong>
+              </div>
+            </div>
+            <div className="setup-summary">
+              <span>{customTest.category.trim() || 'No category'}</span>
+              <span>{customTest.visibility}</span>
+              <span>{customTestStatus === 'published' ? 'Published' : 'Draft'}</span>
+            </div>
+            <div className="account-note">
+              <p className="muted">
+                Saving and publishing will be connected when custom tests are added to the backend.
+              </p>
+            </div>
+            {customTestMessage && (
+              <p className={customTestMessage.includes('saved') || customTestMessage.includes('published') ? 'success' : 'error'}>
+                {customTestMessage}
+              </p>
+            )}
+            <div className="custom-test-actions">
+              <button
+                className="secondary"
+                type="button"
+                disabled={customTestSaving}
+                onClick={() => void handleSaveCustomTest('draft')}
+              >
+                Save draft
+              </button>
+              <button
+                type="button"
+                disabled={customTestSaving}
+                onClick={() => void handleSaveCustomTest('published')}
+              >
+                {customTestSaving ? 'Saving...' : customTestStatus === 'published' ? 'Update published test' : 'Publish'}
+              </button>
+            </div>
+          </aside>
+        </section>
+      </main>
+    );
+  }
+
+  if (!game && appView === 'upload-test') {
+    return (
+      <main className="app-shell logged-in-shell">
+        {renderHotbar()}
+        <section className="upload-test-page">
+          <div className="upload-test-copy">
+            <p className="eyebrow">Upload your test</p>
+            <h1>Turn a document into a quiz.</h1>
+            <p className="hero-copy">
+              Upload a PDF with questions or learning material. Automatic extraction and quiz creation will be added here.
+            </p>
+          </div>
+
+          <section className="panel upload-test-card">
+            <div className="upload-test-animation" aria-hidden="true">
+              <strong>Not discovered yet</strong>
+            </div>
+            <label className="upload-test-dropzone">
+              <span>{uploadedTestFile ? uploadedTestFile.name : 'Drop a PDF here or choose a file'}</span>
+              <small>{uploadedTestFile ? `${Math.ceil(uploadedTestFile.size / 1024)} KB selected` : 'PDF files up to 20 MB'}</small>
+              <input
+                accept="application/pdf,.pdf"
+                type="file"
+                onChange={(event) => setUploadedTestFile(event.target.files?.[0] ?? null)}
+              />
+            </label>
+            <button type="button" disabled={!uploadedTestFile}>
+              Generate test from PDF
+            </button>
+            <p className="muted">This is currently a visual preview. PDF processing will be connected later.</p>
+          </section>
+        </section>
+      </main>
+    );
+  }
+
+  if (!game && appView === 'my-tests') {
+    return (
+      <main className="app-shell logged-in-shell">
+        {renderHotbar()}
+        <section className="custom-test-header">
+          <div>
+            <p className="eyebrow">My Tests</p>
+            <h1>Your saved drafts.</h1>
+            <p className="hero-copy">Continue building a test or start a new one.</p>
+          </div>
+          <button type="button" onClick={startNewCustomTest}>Create new test</button>
+        </section>
+
+        {customTestDrafts.length === 0 ? (
+          <section className="panel empty-tests">
+            <p className="eyebrow">No drafts yet</p>
+            <h2>Your saved tests will appear here.</h2>
+            <button type="button" onClick={startNewCustomTest}>Create your first test</button>
+          </section>
+        ) : (
+          <section className="my-tests-grid">
+            {customTestDrafts.map((draft) => (
+              <article className="panel my-test-card" key={draft.id}>
+                <div>
+                  <p className="eyebrow">{draft.category || 'Uncategorized'}</p>
+                  <h2>{draft.title || 'Untitled test'}</h2>
+                  <p className="muted">{draft.description || 'No description yet.'}</p>
+                </div>
+                <div className="setup-summary">
+                  <span>{draft.questions.length} questions</span>
+                  <span>{draft.visibility}</span>
+                  <span>{draft.status === 'published' ? 'Published' : 'Draft'}</span>
+                </div>
+                <p className="muted">Updated {formatDate(draft.updatedAt)}</p>
+                <div className="my-test-actions">
+                  <button type="button" onClick={() => openCustomTestDraft(draft)}>Continue editing</button>
+                  <button
+                    className="danger"
+                    type="button"
+                    disabled={deletingCustomTestId === draft.id}
+                    onClick={() => void handleDeleteCustomTest(draft)}
+                  >
+                    {deletingCustomTestId === draft.id ? 'Deleting...' : 'Delete test'}
+                  </button>
+                </div>
+              </article>
+            ))}
+          </section>
+        )}
+      </main>
+    );
+  }
+
+  if (!game && appView === 'user-tests') {
+    if (activePublishedTest) {
+      const testFinished = publishedQuestionIndex >= activePublishedTest.questions.length;
+      const activeQuestion = activePublishedTest.questions[publishedQuestionIndex];
+
+      return (
+        <main className="app-shell logged-in-shell">
+          {renderHotbar()}
+          {testFinished ? (
+            <section className="panel published-test-result">
+              <p className="eyebrow">Test complete</p>
+              <h1>{activePublishedTest.title}</h1>
+              <strong>{publishedTestScore}/{activePublishedTest.questions.length}</strong>
+              <p className="muted">Correct answers</p>
+              <div className="form-actions">
+                <button type="button" onClick={() => startPublishedTest(activePublishedTest)}>Try again</button>
+                <button className="secondary" type="button" onClick={() => setActivePublishedTest(null)}>
+                  Back to User Tests
+                </button>
+              </div>
+            </section>
+          ) : (
+            <section className="published-test-player">
+              <div className="quiz-header">
+                <div>
+                  <p className="eyebrow">Question {publishedQuestionIndex + 1} of {activePublishedTest.questions.length}</p>
+                  <h1>{activePublishedTest.title}</h1>
+                </div>
+                <button className="secondary compact" type="button" onClick={() => setActivePublishedTest(null)}>
+                  Leave test
+                </button>
+              </div>
+              <section className="panel published-question-card">
+                <p className="eyebrow">By {activePublishedTest.authorName}</p>
+                <h2>{activeQuestion.prompt}</h2>
+                <div className="published-answer-list">
+                  {activeQuestion.answers.map((answer, answerIndex) => {
+                    const isCorrect = answerIndex === activeQuestion.correctAnswer;
+                    const isSelected = answerIndex === publishedSelectedAnswer;
+                    const answerClass = publishedAnswerSubmitted
+                      ? isCorrect
+                        ? 'correct'
+                        : isSelected
+                          ? 'wrong'
+                          : ''
+                      : isSelected
+                        ? 'selected'
+                        : '';
+
+                    return (
+                      <button
+                        className={`secondary published-answer ${answerClass}`}
+                        disabled={publishedAnswerSubmitted}
+                        key={answerIndex}
+                        type="button"
+                        onClick={() => setPublishedSelectedAnswer(answerIndex)}
+                      >
+                        {answer}
+                      </button>
+                    );
+                  })}
+                </div>
+                {!publishedAnswerSubmitted ? (
+                  <button type="button" disabled={publishedSelectedAnswer === null} onClick={submitPublishedAnswer}>
+                    Submit answer
+                  </button>
+                ) : (
+                  <button type="button" onClick={nextPublishedQuestion}>
+                    {publishedQuestionIndex + 1 === activePublishedTest.questions.length ? 'See results' : 'Next question'}
+                  </button>
+                )}
+              </section>
+            </section>
+          )}
+        </main>
+      );
+    }
+
+    const filteredPublishedTests = userTestsFilter === 'mine'
+      ? publishedTests.filter((test) => test.authorId === currentUser.uid)
+      : publishedTests;
+
+    return (
+      <main className="app-shell logged-in-shell">
+        {renderHotbar()}
+        <section className="custom-test-header">
+          <div>
+            <p className="eyebrow">Community quizzes</p>
+            <h1>User Tests.</h1>
+            <p className="hero-copy">Play public community tests and your own private published tests.</p>
+          </div>
+          <button className="secondary" type="button" onClick={() => void loadUserData()}>Refresh</button>
+        </section>
+
+        <section className="test-filter-bar" aria-label="Test filters">
+          <label>
+            <input
+              checked={userTestsFilter === 'all'}
+              type="checkbox"
+              onChange={() => setUserTestsFilter('all')}
+            />
+            All tests
+          </label>
+          <label>
+            <input
+              checked={userTestsFilter === 'mine'}
+              type="checkbox"
+              onChange={() => setUserTestsFilter('mine')}
+            />
+            My tests
+          </label>
+        </section>
+
+        {filteredPublishedTests.length === 0 ? (
+          <section className="panel empty-tests">
+            <p className="eyebrow">No tests found</p>
+            <h2>No published tests match this filter.</h2>
+          </section>
+        ) : (
+          <section className="my-tests-grid">
+            {filteredPublishedTests.map((test) => (
+              <article className="panel my-test-card" key={test.id}>
+                <div>
+                  <p className="eyebrow">{test.category || 'Uncategorized'}</p>
+                  <h2>{test.title}</h2>
+                  <p className="muted">{test.description || 'No description.'}</p>
+                </div>
+                <div className="setup-summary">
+                  <span>{test.questions.length} questions</span>
+                  <span>By {test.authorName}</span>
+                  <span>{test.visibility}</span>
+                </div>
+                <button type="button" onClick={() => startPublishedTest(test)}>Start test</button>
+              </article>
+            ))}
+          </section>
+        )}
       </main>
     );
   }
