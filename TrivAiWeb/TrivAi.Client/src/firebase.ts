@@ -19,6 +19,7 @@ import {
   limit,
   orderBy,
   query,
+  runTransaction,
   serverTimestamp,
   setDoc,
   where
@@ -44,6 +45,58 @@ export const auth = firebaseApp ? getAuth(firebaseApp) : null;
 export const db = firebaseApp ? getFirestore(firebaseApp) : null;
 
 export type AvatarConfig = {
+  style: string;
+  seed: string;
+  gender: string;
+  backgroundColor: string;
+  top: string;
+  hairStyle: string;
+  headwear: string;
+  eyesVariant: string;
+  eyebrows: string;
+  mouthVariant: string;
+  accessoriesVariant: string;
+  clothing: string;
+  clothingGraphic: string;
+  clothingColor: string;
+  hatColor: string;
+  accessoriesColor: string;
+  facialHair: string;
+  facialHairColor: string;
+  skinColor: string;
+  hairColor: string;
+  loreleiHair: string;
+  loreleiHead: string;
+  loreleiEyes: string;
+  loreleiEyebrows: string;
+  loreleiMouth: string;
+  loreleiNose: string;
+  loreleiGlasses: string;
+  loreleiEarrings: string;
+  loreleiBeard: string;
+  loreleiFreckles: string;
+  loreleiHairAccessories: string;
+  loreleiHairColor: string;
+  loreleiSkinColor: string;
+  loreleiFeatureColor: string;
+  notionistsHair: string;
+  notionistsClothes: string;
+  notionistsClothesGraphic: string;
+  notionistsEyes: string;
+  notionistsEyebrows: string;
+  notionistsMouth: string;
+  notionistsNose: string;
+  notionistsGlasses: string;
+  notionistsBeard: string;
+  notionistsGesture: string;
+  openPeepsHead: string;
+  openPeepsExpression: string;
+  openPeepsAccessories: string;
+  openPeepsFacialHair: string;
+  openPeepsMask: string;
+  openPeepsClothingColor: string;
+  openPeepsHeadContrastColor: string;
+  openPeepsSkinColor: string;
   base: string;
   face: string;
   eyes: string;
@@ -72,8 +125,18 @@ export type UserProfile = {
   currentStreak: number;
   bestStreak: number;
   lastPlayedAt?: Date;
+  dailyRewardStreak: number;
+  lastDailyRewardDate?: string;
   openAiPreviousResponseId?: string;
 };
+
+export type DailyRewardClaim = {
+  profile: UserProfile;
+  reward: number;
+  streak: number;
+};
+
+export const dailyRewardPoints = [25, 35, 50, 65, 85, 110, 150];
 
 export type LeaderboardEntry = {
   uid: string;
@@ -105,6 +168,11 @@ export type CustomTestQuestion = {
   correctAnswer: number;
 };
 
+export type PublishedTestQuestion = {
+  prompt: string;
+  answers: string[];
+};
+
 export type CustomTestDraft = {
   id: string;
   title: string;
@@ -117,9 +185,10 @@ export type CustomTestDraft = {
   publishedAt?: Date;
 };
 
-export type PublishedTest = CustomTestDraft & {
+export type PublishedTest = Omit<CustomTestDraft, 'questions'> & {
   authorId: string;
   authorName: string;
+  questions: PublishedTestQuestion[];
 };
 
 function requireFirebase() {
@@ -135,6 +204,58 @@ function fallbackName(user: User) {
 }
 
 export const defaultAvatar: AvatarConfig = {
+  style: 'avataaars',
+  seed: 'TrivAI Player',
+  gender: 'masculine',
+  backgroundColor: '8de8d2',
+  top: 'shortFlat',
+  hairStyle: 'shortFlat',
+  headwear: 'none',
+  eyesVariant: 'default',
+  eyebrows: 'default',
+  mouthVariant: 'smile',
+  accessoriesVariant: 'none',
+  clothing: 'hoodie',
+  clothingGraphic: 'diamond',
+  clothingColor: '262e33',
+  hatColor: '25557c',
+  accessoriesColor: '262e33',
+  facialHair: 'none',
+  facialHairColor: '2c1b18',
+  skinColor: 'edb98a',
+  hairColor: '2c1b18',
+  loreleiHair: 'variant01',
+  loreleiHead: 'variant01',
+  loreleiEyes: 'variant01',
+  loreleiEyebrows: 'variant01',
+  loreleiMouth: 'happy01',
+  loreleiNose: 'variant01',
+  loreleiGlasses: 'none',
+  loreleiEarrings: 'none',
+  loreleiBeard: 'none',
+  loreleiFreckles: 'none',
+  loreleiHairAccessories: 'none',
+  loreleiHairColor: '2c1b18',
+  loreleiSkinColor: 'edb98a',
+  loreleiFeatureColor: '000000',
+  notionistsHair: 'variant01',
+  notionistsClothes: 'variant01',
+  notionistsClothesGraphic: 'none',
+  notionistsEyes: 'variant01',
+  notionistsEyebrows: 'variant01',
+  notionistsMouth: 'variant01',
+  notionistsNose: 'variant01',
+  notionistsGlasses: 'none',
+  notionistsBeard: 'none',
+  notionistsGesture: 'none',
+  openPeepsHead: 'afro',
+  openPeepsExpression: 'smile',
+  openPeepsAccessories: 'none',
+  openPeepsFacialHair: 'none',
+  openPeepsMask: 'none',
+  openPeepsClothingColor: '8fa7df',
+  openPeepsHeadContrastColor: '2c1b18',
+  openPeepsSkinColor: 'edb98a',
   base: 'gold',
   face: 'bright',
   eyes: 'bright',
@@ -147,14 +268,122 @@ export const defaultAvatar: AvatarConfig = {
   item: 'none'
 };
 
-function readAvatarConfig(value: unknown): AvatarConfig {
+function readAvatarConfig(value: unknown, fallbackSeed = defaultAvatar.seed): AvatarConfig {
   if (!value || typeof value !== 'object') {
-    return defaultAvatar;
+    return { ...defaultAvatar, seed: fallbackSeed };
   }
 
   const avatar = value as Partial<Record<keyof AvatarConfig, unknown>>;
 
   return {
+    style: typeof avatar.style === 'string' ? avatar.style : defaultAvatar.style,
+    seed: typeof avatar.seed === 'string' ? avatar.seed : fallbackSeed,
+    gender: typeof avatar.gender === 'string' ? avatar.gender : defaultAvatar.gender,
+    backgroundColor: typeof avatar.backgroundColor === 'string'
+      ? avatar.backgroundColor
+      : defaultAvatar.backgroundColor,
+    top: typeof avatar.top === 'string' ? avatar.top : defaultAvatar.top,
+    hairStyle: typeof avatar.hairStyle === 'string'
+      ? avatar.hairStyle
+      : typeof avatar.top === 'string'
+        ? avatar.top
+        : defaultAvatar.hairStyle,
+    headwear: typeof avatar.headwear === 'string' ? avatar.headwear : defaultAvatar.headwear,
+    eyesVariant: typeof avatar.eyesVariant === 'string' ? avatar.eyesVariant : defaultAvatar.eyesVariant,
+    eyebrows: typeof avatar.eyebrows === 'string' ? avatar.eyebrows : defaultAvatar.eyebrows,
+    mouthVariant: typeof avatar.mouthVariant === 'string' ? avatar.mouthVariant : defaultAvatar.mouthVariant,
+    accessoriesVariant: typeof avatar.accessoriesVariant === 'string'
+      ? avatar.accessoriesVariant
+      : defaultAvatar.accessoriesVariant,
+    clothing: typeof avatar.clothing === 'string' ? avatar.clothing : defaultAvatar.clothing,
+    clothingGraphic: typeof avatar.clothingGraphic === 'string'
+      ? avatar.clothingGraphic
+      : defaultAvatar.clothingGraphic,
+    clothingColor: typeof avatar.clothingColor === 'string' ? avatar.clothingColor : defaultAvatar.clothingColor,
+    hatColor: typeof avatar.hatColor === 'string' ? avatar.hatColor : defaultAvatar.hatColor,
+    accessoriesColor: typeof avatar.accessoriesColor === 'string'
+      ? avatar.accessoriesColor
+      : defaultAvatar.accessoriesColor,
+    facialHair: typeof avatar.facialHair === 'string' ? avatar.facialHair : defaultAvatar.facialHair,
+    facialHairColor: typeof avatar.facialHairColor === 'string'
+      ? avatar.facialHairColor
+      : defaultAvatar.facialHairColor,
+    skinColor: typeof avatar.skinColor === 'string' ? avatar.skinColor : defaultAvatar.skinColor,
+    hairColor: typeof avatar.hairColor === 'string' ? avatar.hairColor : defaultAvatar.hairColor,
+    loreleiHair: typeof avatar.loreleiHair === 'string' ? avatar.loreleiHair : defaultAvatar.loreleiHair,
+    loreleiHead: typeof avatar.loreleiHead === 'string' ? avatar.loreleiHead : defaultAvatar.loreleiHead,
+    loreleiEyes: typeof avatar.loreleiEyes === 'string' ? avatar.loreleiEyes : defaultAvatar.loreleiEyes,
+    loreleiEyebrows: typeof avatar.loreleiEyebrows === 'string'
+      ? avatar.loreleiEyebrows
+      : defaultAvatar.loreleiEyebrows,
+    loreleiMouth: typeof avatar.loreleiMouth === 'string' ? avatar.loreleiMouth : defaultAvatar.loreleiMouth,
+    loreleiNose: typeof avatar.loreleiNose === 'string' ? avatar.loreleiNose : defaultAvatar.loreleiNose,
+    loreleiGlasses: typeof avatar.loreleiGlasses === 'string'
+      ? avatar.loreleiGlasses
+      : defaultAvatar.loreleiGlasses,
+    loreleiEarrings: typeof avatar.loreleiEarrings === 'string'
+      ? avatar.loreleiEarrings
+      : defaultAvatar.loreleiEarrings,
+    loreleiBeard: typeof avatar.loreleiBeard === 'string' ? avatar.loreleiBeard : defaultAvatar.loreleiBeard,
+    loreleiFreckles: typeof avatar.loreleiFreckles === 'string'
+      ? avatar.loreleiFreckles
+      : defaultAvatar.loreleiFreckles,
+    loreleiHairAccessories: avatar.loreleiHairAccessories === 'variant01'
+      ? 'flowers'
+      : typeof avatar.loreleiHairAccessories === 'string'
+        ? avatar.loreleiHairAccessories
+        : defaultAvatar.loreleiHairAccessories,
+    loreleiHairColor: typeof avatar.loreleiHairColor === 'string'
+      ? avatar.loreleiHairColor
+      : defaultAvatar.loreleiHairColor,
+    loreleiSkinColor: typeof avatar.loreleiSkinColor === 'string'
+      ? avatar.loreleiSkinColor
+      : defaultAvatar.loreleiSkinColor,
+    loreleiFeatureColor: typeof avatar.loreleiFeatureColor === 'string'
+      ? avatar.loreleiFeatureColor
+      : defaultAvatar.loreleiFeatureColor,
+    notionistsHair: typeof avatar.notionistsHair === 'string' ? avatar.notionistsHair : defaultAvatar.notionistsHair,
+    notionistsClothes: typeof avatar.notionistsClothes === 'string'
+      ? avatar.notionistsClothes
+      : defaultAvatar.notionistsClothes,
+    notionistsClothesGraphic: typeof avatar.notionistsClothesGraphic === 'string'
+      ? avatar.notionistsClothesGraphic
+      : defaultAvatar.notionistsClothesGraphic,
+    notionistsEyes: typeof avatar.notionistsEyes === 'string' ? avatar.notionistsEyes : defaultAvatar.notionistsEyes,
+    notionistsEyebrows: typeof avatar.notionistsEyebrows === 'string'
+      ? avatar.notionistsEyebrows
+      : defaultAvatar.notionistsEyebrows,
+    notionistsMouth: typeof avatar.notionistsMouth === 'string'
+      ? avatar.notionistsMouth
+      : defaultAvatar.notionistsMouth,
+    notionistsNose: typeof avatar.notionistsNose === 'string' ? avatar.notionistsNose : defaultAvatar.notionistsNose,
+    notionistsGlasses: typeof avatar.notionistsGlasses === 'string'
+      ? avatar.notionistsGlasses
+      : defaultAvatar.notionistsGlasses,
+    notionistsBeard: typeof avatar.notionistsBeard === 'string' ? avatar.notionistsBeard : defaultAvatar.notionistsBeard,
+    notionistsGesture: typeof avatar.notionistsGesture === 'string'
+      ? avatar.notionistsGesture
+      : defaultAvatar.notionistsGesture,
+    openPeepsHead: typeof avatar.openPeepsHead === 'string' ? avatar.openPeepsHead : defaultAvatar.openPeepsHead,
+    openPeepsExpression: typeof avatar.openPeepsExpression === 'string'
+      ? avatar.openPeepsExpression
+      : defaultAvatar.openPeepsExpression,
+    openPeepsAccessories: typeof avatar.openPeepsAccessories === 'string'
+      ? avatar.openPeepsAccessories
+      : defaultAvatar.openPeepsAccessories,
+    openPeepsFacialHair: typeof avatar.openPeepsFacialHair === 'string'
+      ? avatar.openPeepsFacialHair
+      : defaultAvatar.openPeepsFacialHair,
+    openPeepsMask: typeof avatar.openPeepsMask === 'string' ? avatar.openPeepsMask : defaultAvatar.openPeepsMask,
+    openPeepsClothingColor: typeof avatar.openPeepsClothingColor === 'string'
+      ? avatar.openPeepsClothingColor
+      : defaultAvatar.openPeepsClothingColor,
+    openPeepsHeadContrastColor: typeof avatar.openPeepsHeadContrastColor === 'string'
+      ? avatar.openPeepsHeadContrastColor
+      : defaultAvatar.openPeepsHeadContrastColor,
+    openPeepsSkinColor: typeof avatar.openPeepsSkinColor === 'string'
+      ? avatar.openPeepsSkinColor
+      : defaultAvatar.openPeepsSkinColor,
     base: typeof avatar.base === 'string' ? avatar.base : defaultAvatar.base,
     face: typeof avatar.face === 'string' ? avatar.face : defaultAvatar.face,
     eyes: typeof avatar.eyes === 'string'
@@ -201,6 +430,23 @@ function getNextStreak(lastPlayedAt: Date | undefined, currentStreak: number) {
   return 1;
 }
 
+function localDateKey(date = new Date()) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function previousLocalDateKey(date = new Date()) {
+  const previous = new Date(date);
+  previous.setDate(previous.getDate() - 1);
+  return localDateKey(previous);
+}
+
+export function canClaimDailyReward(profile: UserProfile) {
+  return profile.lastDailyRewardDate !== localDateKey();
+}
+
 export async function registerWithEmail(email: string, password: string, displayName: string) {
   const { auth } = requireFirebase();
   const result = await createUserWithEmailAndPassword(auth, email, password);
@@ -236,7 +482,7 @@ export async function ensureUserProfile(user: User, displayName = fallbackName(u
     const profile: Omit<UserProfile, 'uid'> = {
       email: user.email ?? '',
       displayName,
-      avatar: defaultAvatar,
+      avatar: { ...defaultAvatar, seed: user.uid },
       level: 1,
       score: 0,
       bestPlatformScore: 0,
@@ -246,7 +492,8 @@ export async function ensureUserProfile(user: User, displayName = fallbackName(u
       bestCorrectAnswers: 0,
       bestAccuracy: 0,
       currentStreak: 0,
-      bestStreak: 0
+      bestStreak: 0,
+      dailyRewardStreak: 0
     };
 
     await setDoc(profileRef, {
@@ -279,7 +526,7 @@ export async function getUserProfile(user: User): Promise<UserProfile> {
     uid: user.uid,
     email: user.email ?? '',
     displayName: String(data.displayName ?? fallbackName(user)),
-    avatar: readAvatarConfig(data.avatar),
+    avatar: readAvatarConfig(data.avatar, user.uid),
     level: Number(data.level ?? 1),
     score: Number(data.score ?? 0),
     bestPlatformScore: Number(data.bestPlatformScore ?? 0),
@@ -291,9 +538,82 @@ export async function getUserProfile(user: User): Promise<UserProfile> {
     currentStreak: Number(data.currentStreak ?? 0),
     bestStreak: Number(data.bestStreak ?? 0),
     lastPlayedAt,
+    dailyRewardStreak: Number(data.dailyRewardStreak ?? 0),
+    lastDailyRewardDate:
+      typeof data.lastDailyRewardDate === 'string' ? data.lastDailyRewardDate : undefined,
     openAiPreviousResponseId:
       typeof data.openAiPreviousResponseId === 'string' ? data.openAiPreviousResponseId : undefined
   };
+}
+
+export async function claimDailyReward(user: User): Promise<DailyRewardClaim> {
+  const { db } = requireFirebase();
+  const profileRef = doc(db, 'users', user.uid);
+  const leaderboardRef = doc(db, 'leaderboard', user.uid);
+
+  return runTransaction(db, async (transaction) => {
+    const snapshot = await transaction.get(profileRef);
+    const data = snapshot.data() ?? {};
+    const today = localDateKey();
+    const lastClaimDate = typeof data.lastDailyRewardDate === 'string' ? data.lastDailyRewardDate : undefined;
+
+    if (lastClaimDate === today) {
+      throw new Error('Today’s daily reward has already been claimed.');
+    }
+
+    const previousStreak = Number(data.dailyRewardStreak ?? 0);
+    const streak = lastClaimDate === previousLocalDateKey() ? previousStreak + 1 : 1;
+    const reward = dailyRewardPoints[(streak - 1) % dailyRewardPoints.length];
+    let level = Number(data.level ?? 1);
+    let score = Number(data.score ?? 0) + reward;
+
+    while (score >= level * 150) {
+      score -= level * 150;
+      level += 1;
+    }
+
+    transaction.set(profileRef, {
+      level,
+      score,
+      dailyRewardStreak: streak,
+      lastDailyRewardDate: today,
+      updatedAt: serverTimestamp()
+    }, { merge: true });
+
+    transaction.set(leaderboardRef, {
+      uid: user.uid,
+      displayName: String(data.displayName ?? fallbackName(user)),
+      level,
+      score,
+      updatedAt: serverTimestamp()
+    }, { merge: true });
+
+    return {
+      profile: {
+        uid: user.uid,
+        email: user.email ?? '',
+        displayName: String(data.displayName ?? fallbackName(user)),
+        avatar: readAvatarConfig(data.avatar, user.uid),
+        level,
+        score,
+        bestPlatformScore: Number(data.bestPlatformScore ?? 0),
+        gamesPlayed: Number(data.gamesPlayed ?? 0),
+        totalAnsweredQuestions: Number(data.totalAnsweredQuestions ?? 0),
+        totalCorrectAnswers: Number(data.totalCorrectAnswers ?? 0),
+        bestCorrectAnswers: Number(data.bestCorrectAnswers ?? 0),
+        bestAccuracy: Number(data.bestAccuracy ?? 0),
+        currentStreak: Number(data.currentStreak ?? 0),
+        bestStreak: Number(data.bestStreak ?? 0),
+        lastPlayedAt: data.lastPlayedAt?.toDate?.(),
+        dailyRewardStreak: streak,
+        lastDailyRewardDate: today,
+        openAiPreviousResponseId:
+          typeof data.openAiPreviousResponseId === 'string' ? data.openAiPreviousResponseId : undefined
+      },
+      reward,
+      streak
+    };
+  });
 }
 
 export async function saveOpenAiPreviousResponseId(user: User, responseId: string) {
@@ -434,136 +754,67 @@ export async function getRecentSessions(user: User, maxCount = 5): Promise<Sessi
 }
 
 export async function saveCustomTestDraft(user: User, draft: CustomTestDraft): Promise<CustomTestDraft> {
-  const { db } = requireFirebase();
-  const draftRef = draft.id
-    ? doc(db, 'users', user.uid, 'customTests', draft.id)
-    : doc(collection(db, 'users', user.uid, 'customTests'));
-
-  await setDoc(
-    draftRef,
-    {
-      title: draft.title,
-      description: draft.description,
-      category: draft.category,
-      visibility: draft.visibility,
-      status: draft.status,
-      questions: draft.questions,
-      updatedAt: serverTimestamp(),
-      ...(draft.status === 'published' ? { publishedAt: serverTimestamp() } : {})
-    },
-    { merge: true }
-  );
-
-  const publishedRef = doc(db, 'publishedTests', draftRef.id);
-
-  if (draft.status === 'published') {
-    await setDoc(publishedRef, {
-      authorId: user.uid,
-      authorName: fallbackName(user),
-      title: draft.title,
-      description: draft.description,
-      category: draft.category,
-      visibility: draft.visibility,
-      status: 'published' as const,
-      questions: draft.questions,
-      updatedAt: serverTimestamp(),
-      publishedAt: serverTimestamp()
-    });
-  }
-
-  return {
-    ...draft,
-    id: draftRef.id,
-    updatedAt: new Date()
-  };
-}
-
-export async function getPublishedTests(user: User): Promise<PublishedTest[]> {
-  const { db } = requireFirebase();
-  const publishedTestsRef = collection(db, 'publishedTests');
-  const [publicSnapshot, ownSnapshot] = await Promise.all([
-    getDocs(query(publishedTestsRef, where('visibility', '==', 'Public'))),
-    getDocs(query(publishedTestsRef, where('authorId', '==', user.uid)))
-  ]);
-  const entries = new Map([...publicSnapshot.docs, ...ownSnapshot.docs].map((entry) => [entry.id, entry]));
-
-  return [...entries.values()].map((entry) => {
-    const data = entry.data();
-    const questions = Array.isArray(data.questions)
-      ? data.questions.map((question: Record<string, unknown>) => ({
-          prompt: String(question.prompt ?? ''),
-          answers: Array.isArray(question.answers)
-            ? question.answers.map((answer) => String(answer))
-            : [],
-          correctAnswer: Number(question.correctAnswer ?? 0)
-        }))
-      : [];
-
-    return {
-      id: entry.id,
-      authorId: String(data.authorId ?? ''),
-      authorName: String(data.authorName ?? 'Player'),
-      title: String(data.title ?? ''),
-      description: String(data.description ?? ''),
-      category: String(data.category ?? ''),
-      visibility: String(data.visibility ?? 'Private'),
-      status: 'published' as const,
-      questions,
-      updatedAt: data.updatedAt && typeof data.updatedAt.toDate === 'function'
-        ? data.updatedAt.toDate()
-        : undefined,
-      publishedAt: data.publishedAt && typeof data.publishedAt.toDate === 'function'
-        ? data.publishedAt.toDate()
-        : undefined
-    };
-  }).sort((left, right) => (right.updatedAt?.getTime() ?? 0) - (left.updatedAt?.getTime() ?? 0));
-}
-
-export async function getCustomTestDrafts(user: User): Promise<CustomTestDraft[]> {
-  const { db } = requireFirebase();
-  const draftsQuery = query(
-    collection(db, 'users', user.uid, 'customTests'),
-    orderBy('updatedAt', 'desc')
-  );
-  const snapshot = await getDocs(draftsQuery);
-
-  return snapshot.docs.map((entry) => {
-    const data = entry.data();
-    const questions = Array.isArray(data.questions)
-      ? data.questions.map((question: Record<string, unknown>) => ({
-          prompt: String(question.prompt ?? ''),
-          answers: Array.isArray(question.answers)
-            ? question.answers.map((answer) => String(answer))
-            : ['', '', '', ''],
-          correctAnswer: Number(question.correctAnswer ?? 0)
-        }))
-      : [];
-
-    return {
-      id: entry.id,
-      title: String(data.title ?? ''),
-      description: String(data.description ?? ''),
-      category: String(data.category ?? ''),
-      visibility: String(data.visibility ?? 'Private'),
-      status: data.status === 'published' ? 'published' : 'draft',
-      questions,
-      updatedAt: data.updatedAt && typeof data.updatedAt.toDate === 'function'
-        ? data.updatedAt.toDate()
-        : undefined,
-      publishedAt: data.publishedAt && typeof data.publishedAt.toDate === 'function'
-        ? data.publishedAt.toDate()
-        : undefined
-    };
+  return customTestApi<CustomTestDraft>(user, '', {
+    method: 'POST',
+    body: JSON.stringify(draft)
   });
 }
 
-export async function deleteCustomTest(user: User, testId: string) {
-  const { db } = requireFirebase();
+export async function getPublishedTests(user: User): Promise<PublishedTest[]> {
+  return mapCustomTestDates(await customTestApi<PublishedTest[]>(user, '/published'));
+}
 
-  await Promise.all([
-    deleteDoc(doc(db, 'users', user.uid, 'customTests', testId)),
-    deleteDoc(doc(db, 'publishedTests', testId))
-  ]);
+export async function getCustomTestDrafts(user: User): Promise<CustomTestDraft[]> {
+  return mapCustomTestDates(await customTestApi<CustomTestDraft[]>(user));
+}
+
+export async function deleteCustomTest(user: User, testId: string) {
+  await customTestApi<void>(user, `/${encodeURIComponent(testId)}`, { method: 'DELETE' });
+}
+
+export async function checkPublishedTestAnswer(
+  user: User,
+  testId: string,
+  questionIndex: number,
+  answerIndex: number
+): Promise<boolean> {
+  const result = await customTestApi<{ isCorrect: boolean }>(
+    user,
+    `/published/${encodeURIComponent(testId)}/answers`,
+    {
+      method: 'POST',
+      body: JSON.stringify({ questionIndex, answerIndex })
+    }
+  );
+
+  return result.isCorrect;
+}
+
+async function customTestApi<T>(user: User, path = '', init: RequestInit = {}): Promise<T> {
+  const token = await user.getIdToken();
+  const response = await fetch(`/api/custom-tests${path}`, {
+    ...init,
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+      ...init.headers
+    }
+  });
+
+  if (!response.ok) {
+    const problem = await response.text();
+    throw new Error(problem || 'Custom test request failed.');
+  }
+
+  return response.status === 204 ? undefined as T : response.json() as Promise<T>;
+}
+
+function mapCustomTestDates<T extends { updatedAt?: Date; publishedAt?: Date }>(tests: T[]): T[] {
+  return tests.map((test) => ({
+    ...test,
+    updatedAt: test.updatedAt ? new Date(test.updatedAt) : undefined,
+    publishedAt: test.publishedAt ? new Date(test.publishedAt) : undefined
+  })) as T[];
 }
 
 export async function getLeaderboard(): Promise<LeaderboardEntry[]> {

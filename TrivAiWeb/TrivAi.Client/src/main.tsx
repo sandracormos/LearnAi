@@ -1,8 +1,14 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { onAuthStateChanged, type User } from 'firebase/auth';
+import 'animate.css';
+import categoriesText from './categories.txt?raw';
 import {
   auth,
+  canClaimDailyReward,
+  checkPublishedTestAnswer,
+  claimDailyReward,
+  dailyRewardPoints,
   deleteCustomTest,
   getLeaderboard,
   getCustomTestDrafts,
@@ -42,9 +48,16 @@ import lipsMouthImage from './assets/avatar/items/mouth/NicePng_lips-png_67937.p
 import smileMouthImage from './assets/avatar/items/mouth/smile-clip-art-24.png';
 import smallSmileMouthImage from './assets/avatar/items/mouth/smile-clip-art-73.png';
 import heroImage from './assets/trivai-hero.png';
+import { BrainAnimation } from './components/ui/brain-animation';
+import { ConfettiAnimation } from './components/ui/confetti-animation';
 import { ConnectionErrorPage } from './components/ui/connection-error-page';
+import { InteractiveRobotSpline } from './components/ui/interactive-3d-robot';
+import { QuizLoadingAnimation } from './components/ui/quiz-loading-animation';
 import { TrivAiDock } from './components/ui/trivai-dock';
+import { WinnerAnimation } from './components/ui/winner-animation';
 import './styles.css';
+
+const robotSceneUrl = 'https://prod.spline.design/PyzDhpQ9E5f1E3MT/scene.splinecode';
 
 type Difficulty = 'Easy' | 'Medium' | 'Hard';
 type Duration = 'Short Version' | 'Medium Version' | 'Long Version';
@@ -87,7 +100,61 @@ type AvatarOption = {
   minLevel?: number;
 };
 
-type AvatarPart = keyof AvatarConfig;
+type AvatarPart = Exclude<
+  keyof AvatarConfig,
+  | 'style'
+  | 'seed'
+  | 'gender'
+  | 'backgroundColor'
+  | 'top'
+  | 'hairStyle'
+  | 'headwear'
+  | 'eyesVariant'
+  | 'eyebrows'
+  | 'mouthVariant'
+  | 'accessoriesVariant'
+  | 'clothing'
+  | 'clothingGraphic'
+  | 'clothingColor'
+  | 'hatColor'
+  | 'accessoriesColor'
+  | 'facialHair'
+  | 'facialHairColor'
+  | 'skinColor'
+  | 'hairColor'
+  | 'loreleiHair'
+  | 'loreleiHead'
+  | 'loreleiEyes'
+  | 'loreleiEyebrows'
+  | 'loreleiMouth'
+  | 'loreleiNose'
+  | 'loreleiGlasses'
+  | 'loreleiEarrings'
+  | 'loreleiBeard'
+  | 'loreleiFreckles'
+  | 'loreleiHairAccessories'
+  | 'loreleiHairColor'
+  | 'loreleiSkinColor'
+  | 'loreleiFeatureColor'
+  | 'notionistsHair'
+  | 'notionistsClothes'
+  | 'notionistsClothesGraphic'
+  | 'notionistsEyes'
+  | 'notionistsEyebrows'
+  | 'notionistsMouth'
+  | 'notionistsNose'
+  | 'notionistsGlasses'
+  | 'notionistsBeard'
+  | 'notionistsGesture'
+  | 'openPeepsHead'
+  | 'openPeepsExpression'
+  | 'openPeepsAccessories'
+  | 'openPeepsFacialHair'
+  | 'openPeepsMask'
+  | 'openPeepsClothingColor'
+  | 'openPeepsHeadContrastColor'
+  | 'openPeepsSkinColor'
+>;
 
 const durationToQuestions: Record<Duration, number> = {
   'Short Version': 10,
@@ -95,22 +162,409 @@ const durationToQuestions: Record<Duration, number> = {
   'Long Version': 30
 };
 
-const combinedCategories = [
-  'history',
-  'geography',
-  'science',
-  'sport',
-  'music',
-  'movies',
-  'technology',
-  'art',
-  'literature',
-  'nature',
-  'video games',
-  'space'
-];
+const combinedCategories = [...new Set(
+  categoriesText
+    .split(/\r?\n/)
+    .map((category) => category.trim())
+    .filter(Boolean)
+)];
 
 const randomNames = ['Nova', 'RoboFan', 'Pixel', 'Astra', 'Quizzer'];
+
+const diceBearStyles = [
+  { id: 'avataaars', label: 'Classic Avatar', minLevel: 1 },
+  { id: 'lorelei', label: 'Dreamer', minLevel: 15 },
+  { id: 'open-peeps', label: 'Hand-Drawn', minLevel: 25 },
+  { id: 'notionists', label: 'Notion Sketch', minLevel: 35 }
+];
+
+const diceBearPartOptions: {
+  key: keyof Pick<AvatarConfig, 'hairStyle' | 'headwear' | 'eyesVariant' | 'eyebrows' | 'mouthVariant' | 'accessoriesVariant' | 'clothing' | 'clothingGraphic' | 'clothingColor' | 'hatColor' | 'accessoriesColor' | 'facialHair' | 'facialHairColor' | 'skinColor' | 'hairColor'>;
+  label: string;
+  values: { id: string; label: string; minLevel?: number }[];
+}[] = [
+  { key: 'hairStyle', label: 'Hair', values: [
+    { id: 'none', label: 'None' },
+    { id: 'shortFlat', label: 'Short Flat' }, { id: 'shortRound', label: 'Short Round' },
+    { id: 'shortWaved', label: 'Short Waved' }, { id: 'longButNotTooLong', label: 'Long' },
+    { id: 'bigHair', label: 'Big Hair', minLevel: 15 }, { id: 'bob', label: 'Bob' },
+    { id: 'curly', label: 'Curly', minLevel: 8 }, { id: 'dreads', label: 'Dreads', minLevel: 20 }
+  ] },
+  { key: 'headwear', label: 'Headwear', values: [
+    { id: 'none', label: 'None' }, { id: 'hat', label: 'Hat' },
+    { id: 'hijab', label: 'Hijab' }, { id: 'turban', label: 'Turban' },
+    { id: 'winterHat1', label: 'Winter Hat 1', minLevel: 6 }, { id: 'winterHat02', label: 'Winter Hat 2', minLevel: 10 },
+    { id: 'winterHat03', label: 'Winter Hat 3', minLevel: 15 }, { id: 'winterHat04', label: 'Winter Hat 4', minLevel: 20 }
+  ] },
+  { key: 'eyesVariant', label: 'Eyes', values: [
+    { id: 'default', label: 'Default' }, { id: 'happy', label: 'Happy' },
+    { id: 'wink', label: 'Wink' }, { id: 'surprised', label: 'Surprised' },
+    { id: 'hearts', label: 'Hearts', minLevel: 20 }, { id: 'squint', label: 'Squint', minLevel: 10 }
+  ] },
+  { key: 'eyebrows', label: 'Eyebrows', values: [
+    { id: 'default', label: 'Default' }, { id: 'raisedExcited', label: 'Excited' },
+    { id: 'sadConcerned', label: 'Concerned' }, { id: 'unibrowNatural', label: 'Natural' },
+    { id: 'upDown', label: 'Up Down' }
+  ] },
+  { key: 'mouthVariant', label: 'Mouth', values: [
+    { id: 'smile', label: 'Smile' }, { id: 'default', label: 'Default' },
+    { id: 'twinkle', label: 'Twinkle', minLevel: 15 }, { id: 'serious', label: 'Serious' },
+    { id: 'tongue', label: 'Tongue', minLevel: 10 }, { id: 'concerned', label: 'Concerned' }
+  ] },
+  { key: 'accessoriesVariant', label: 'Accessories', values: [
+    { id: 'none', label: 'None' }, { id: 'prescription01', label: 'Glasses 1' },
+    { id: 'prescription02', label: 'Glasses 2' }, { id: 'round', label: 'Round Glasses' },
+    { id: 'sunglasses', label: 'Sunglasses', minLevel: 20 }, { id: 'wayfarers', label: 'Wayfarers', minLevel: 12 }
+  ] },
+  { key: 'clothing', label: 'Clothing', values: [
+    { id: 'hoodie', label: 'Hoodie' }, { id: 'blazerAndShirt', label: 'Blazer' },
+    { id: 'collarAndSweater', label: 'Sweater' }, { id: 'graphicShirt', label: 'Graphic Shirt' },
+    { id: 'overall', label: 'Overall', minLevel: 8 }, { id: 'shirtCrewNeck', label: 'Crew Neck' }
+  ] },
+  { key: 'clothingGraphic', label: 'Shirt Graphic', values: [
+    { id: 'bat', label: 'Bat' }, { id: 'bear', label: 'Bear' },
+    { id: 'cumbia', label: 'Cumbia' }, { id: 'deer', label: 'Deer' },
+    { id: 'diamond', label: 'Diamond' }, { id: 'hola', label: 'Hola' },
+    { id: 'pizza', label: 'Pizza', minLevel: 8 }, { id: 'resist', label: 'Resist', minLevel: 15 },
+    { id: 'skull', label: 'Skull', minLevel: 25 }, { id: 'skullOutline', label: 'Skull Outline', minLevel: 18 }
+  ] },
+  { key: 'clothingColor', label: 'Clothing Color', values: [
+    { id: '262e33', label: 'Black' }, { id: '25557c', label: 'Blue' },
+    { id: 'e6e6e6', label: 'White' }, { id: 'ff488e', label: 'Pink' },
+    { id: 'ffafb9', label: 'Rose' }, { id: '65c9ff', label: 'Sky' }
+  ] },
+  { key: 'hatColor', label: 'Hat Color', values: [
+    { id: '262e33', label: 'Black' }, { id: '25557c', label: 'Blue' },
+    { id: 'e6e6e6', label: 'White' }, { id: 'ff488e', label: 'Pink' },
+    { id: 'ffafb9', label: 'Rose' }, { id: '65c9ff', label: 'Sky' }
+  ] },
+  { key: 'accessoriesColor', label: 'Accessory Color', values: [
+    { id: '262e33', label: 'Black' }, { id: '25557c', label: 'Blue' },
+    { id: 'e6e6e6', label: 'White' }, { id: 'ff488e', label: 'Pink' },
+    { id: 'ffafb9', label: 'Rose' }, { id: '65c9ff', label: 'Sky' }
+  ] },
+  { key: 'facialHair', label: 'Facial Hair', values: [
+    { id: 'none', label: 'None' }, { id: 'beardLight', label: 'Light Beard' },
+    { id: 'beardMedium', label: 'Medium Beard', minLevel: 8 }, { id: 'beardMajestic', label: 'Large Beard', minLevel: 18 },
+    { id: 'moustacheFancy', label: 'Fancy Moustache', minLevel: 12 }, { id: 'moustacheMagnum', label: 'Magnum Moustache', minLevel: 22 }
+  ] },
+  { key: 'facialHairColor', label: 'Facial Hair Color', values: [
+    { id: '2c1b18', label: 'Black' }, { id: '4a312c', label: 'Brown' },
+    { id: 'a55728', label: 'Auburn' }, { id: 'b58143', label: 'Blonde' },
+    { id: 'd6b370', label: 'Light Blonde' }, { id: '724133', label: 'Chestnut' }
+  ] },
+  { key: 'skinColor', label: 'Skin', values: [
+    { id: 'ffdbb4', label: 'Light' }, { id: 'edb98a', label: 'Warm' },
+    { id: 'd08b5b', label: 'Tan' }, { id: 'ae5d29', label: 'Brown' },
+    { id: '614335', label: 'Deep' }
+  ] },
+  { key: 'hairColor', label: 'Hair Color', values: [
+    { id: '2c1b18', label: 'Black' }, { id: '4a312c', label: 'Brown' },
+    { id: 'a55728', label: 'Auburn' }, { id: 'b58143', label: 'Blonde' },
+    { id: 'd6b370', label: 'Light Blonde' }, { id: '724133', label: 'Chestnut' }
+  ] }
+];
+
+const dependentDiceBearParts = new Set([
+  'clothingGraphic',
+  'hatColor',
+  'accessoriesColor',
+  'facialHairColor'
+]);
+
+const orderedDiceBearPartOptions = [
+  ...diceBearPartOptions.filter((part) => !dependentDiceBearParts.has(part.key)),
+  ...diceBearPartOptions.filter((part) => dependentDiceBearParts.has(part.key))
+];
+
+type LoreleiPartKey = keyof Pick<
+  AvatarConfig,
+  | 'loreleiHair'
+  | 'loreleiHead'
+  | 'loreleiEyes'
+  | 'loreleiEyebrows'
+  | 'loreleiMouth'
+  | 'loreleiNose'
+  | 'loreleiGlasses'
+  | 'loreleiEarrings'
+  | 'loreleiBeard'
+  | 'loreleiFreckles'
+  | 'loreleiHairAccessories'
+  | 'loreleiHairColor'
+  | 'loreleiSkinColor'
+  | 'loreleiFeatureColor'
+>;
+
+const numberedLoreleiOptions = (count: number, prefix = 'variant') =>
+  Array.from({ length: count }, (_, index) => {
+    const number = String(index + 1).padStart(2, '0');
+    return { id: `${prefix}${number}`, label: `Style ${index + 1}` };
+  });
+
+const optionalLoreleiOptions = (count: number) => [
+  { id: 'none', label: 'None' },
+  ...numberedLoreleiOptions(count)
+];
+
+const loreleiColorOptions = [
+  { id: '000000', label: 'Black' },
+  { id: '2c1b18', label: 'Dark Brown' },
+  { id: '4a312c', label: 'Brown' },
+  { id: 'a55728', label: 'Auburn' },
+  { id: 'b58143', label: 'Blonde' },
+  { id: 'ff488e', label: 'Pink' },
+  { id: '25557c', label: 'Blue' }
+];
+
+const loreleiSkinOptions = [
+  { id: 'ffdbb4', label: 'Light' },
+  { id: 'edb98a', label: 'Warm' },
+  { id: 'd08b5b', label: 'Tan' },
+  { id: 'ae5d29', label: 'Brown' },
+  { id: '614335', label: 'Deep' }
+];
+
+const loreleiPartOptions: { key: LoreleiPartKey; label: string; values: AvatarOption[] }[] = [
+  { key: 'loreleiHair', label: 'Hair', values: numberedLoreleiOptions(48) },
+  { key: 'loreleiHead', label: 'Head shape', values: numberedLoreleiOptions(4) },
+  { key: 'loreleiEyes', label: 'Eyes', values: numberedLoreleiOptions(24) },
+  { key: 'loreleiEyebrows', label: 'Eyebrows', values: numberedLoreleiOptions(13) },
+  {
+    key: 'loreleiMouth',
+    label: 'Mouth',
+    values: [...numberedLoreleiOptions(18, 'happy'), ...numberedLoreleiOptions(9, 'sad')]
+  },
+  { key: 'loreleiNose', label: 'Nose', values: numberedLoreleiOptions(6) },
+  { key: 'loreleiGlasses', label: 'Glasses', values: optionalLoreleiOptions(5) },
+  { key: 'loreleiEarrings', label: 'Earrings', values: optionalLoreleiOptions(3) },
+  { key: 'loreleiBeard', label: 'Beard', values: optionalLoreleiOptions(2) },
+  { key: 'loreleiFreckles', label: 'Freckles', values: optionalLoreleiOptions(1) },
+  {
+    key: 'loreleiHairAccessories',
+    label: 'Hair accessory',
+    values: [{ id: 'none', label: 'None' }, { id: 'flowers', label: 'Flowers' }]
+  },
+  { key: 'loreleiHairColor', label: 'Hair color', values: loreleiColorOptions },
+  { key: 'loreleiSkinColor', label: 'Skin color', values: loreleiSkinOptions },
+  { key: 'loreleiFeatureColor', label: 'Feature color', values: loreleiColorOptions }
+];
+
+type OtherStylePartKey = keyof Pick<
+  AvatarConfig,
+  | 'notionistsHair'
+  | 'notionistsClothes'
+  | 'notionistsClothesGraphic'
+  | 'notionistsEyes'
+  | 'notionistsEyebrows'
+  | 'notionistsMouth'
+  | 'notionistsNose'
+  | 'notionistsGlasses'
+  | 'notionistsBeard'
+  | 'notionistsGesture'
+  | 'openPeepsHead'
+  | 'openPeepsExpression'
+  | 'openPeepsAccessories'
+  | 'openPeepsFacialHair'
+  | 'openPeepsMask'
+  | 'openPeepsClothingColor'
+  | 'openPeepsHeadContrastColor'
+  | 'openPeepsSkinColor'
+>;
+
+type OtherStylePart = { key: OtherStylePartKey; label: string; values: AvatarOption[] };
+const namedOptions = (values: string[]) => values.map((id) => ({
+  id,
+  label: id.replace(/([A-Z0-9])/g, ' $1').replace(/^./, (letter) => letter.toUpperCase())
+}));
+const optionalNamedOptions = (values: string[]) => [{ id: 'none', label: 'None' }, ...namedOptions(values)];
+const openPeepsClothingColors: AvatarOption[] = [
+  { id: '8fa7df', label: 'Blue' },
+  { id: '78e185', label: 'Mint' },
+  { id: 'ffcf77', label: 'Gold' },
+  { id: 'e279c7', label: 'Purple' },
+  { id: 'e78276', label: 'Coral' },
+  { id: '9ddadb', label: 'Aqua' },
+  { id: 'fdea6b', label: 'Yellow' }
+];
+const openPeepsHairColors: AvatarOption[] = [
+  { id: '2c1b18', label: 'Black' },
+  { id: 'e8e1e1', label: 'Silver' },
+  { id: 'ecdcbf', label: 'Platinum' },
+  { id: 'd6b370', label: 'Blonde' },
+  { id: 'f59797', label: 'Pink' },
+  { id: 'b58143', label: 'Golden Brown' },
+  { id: 'a55728', label: 'Auburn' },
+  { id: '724133', label: 'Chestnut' },
+  { id: '4a312c', label: 'Dark Brown' },
+  { id: 'c93305', label: 'Red' }
+];
+
+const notionistsPartOptions: OtherStylePart[] = [
+  { key: 'notionistsHair', label: 'Hair', values: [{ id: 'hat', label: 'Hat' }, ...numberedLoreleiOptions(63)] },
+  { key: 'notionistsClothes', label: 'Clothes', values: numberedLoreleiOptions(25) },
+  { key: 'notionistsClothesGraphic', label: 'Clothes graphic', values: optionalNamedOptions(['electric', 'galaxy', 'saturn']) },
+  { key: 'notionistsEyes', label: 'Eyes', values: numberedLoreleiOptions(5) },
+  { key: 'notionistsEyebrows', label: 'Eyebrows', values: numberedLoreleiOptions(13) },
+  { key: 'notionistsMouth', label: 'Mouth', values: numberedLoreleiOptions(30) },
+  { key: 'notionistsNose', label: 'Nose', values: numberedLoreleiOptions(20) },
+  { key: 'notionistsGlasses', label: 'Glasses', values: optionalLoreleiOptions(11) },
+  { key: 'notionistsBeard', label: 'Beard', values: optionalLoreleiOptions(12) },
+  {
+    key: 'notionistsGesture',
+    label: 'Gesture',
+    values: optionalNamedOptions(['hand', 'handPhone', 'ok', 'okLongArm', 'point', 'pointLongArm', 'waveLongArm', 'waveLongArms', 'waveOkLongArms', 'wavePointLongArms'])
+  }
+];
+
+const openPeepsPartOptions: OtherStylePart[] = [
+  {
+    key: 'openPeepsHead',
+    label: 'Head and hair',
+    values: namedOptions(['afro', 'bangs', 'bangs2', 'bantuKnots', 'bear', 'bun', 'bun2', 'buns', 'cornrows', 'cornrows2', 'dreads1', 'dreads2', 'flatTop', 'flatTopLong', 'grayBun', 'grayMedium', 'grayShort', 'hatBeanie', 'hatHip', 'hijab', 'long', 'longAfro', 'longBangs', 'longCurly', 'medium1', 'medium2', 'medium3', 'mediumBangs', 'mediumBangs2', 'mediumBangs3', 'mediumStraight', 'mohawk', 'mohawk2', 'noHair1', 'noHair2', 'noHair3', 'pomp', 'shaved1', 'shaved2', 'shaved3', 'short1', 'short2', 'short3', 'short4', 'short5', 'turban', 'twists', 'twists2'])
+  },
+  {
+    key: 'openPeepsExpression',
+    label: 'Expression',
+    values: namedOptions(['angryWithFang', 'awe', 'blank', 'calm', 'cheeky', 'concerned', 'concernedFear', 'contempt', 'cute', 'cyclops', 'driven', 'eatingHappy', 'explaining', 'eyesClosed', 'fear', 'hectic', 'lovingGrin1', 'lovingGrin2', 'monster', 'old', 'rage', 'serious', 'smile', 'smileBig', 'smileLOL', 'smileTeethGap', 'solemn', 'suspicious', 'tired', 'veryAngry'])
+  },
+  { key: 'openPeepsAccessories', label: 'Accessories', values: optionalNamedOptions(['eyepatch', 'glasses', 'glasses2', 'glasses3', 'glasses4', 'glasses5', 'sunglasses', 'sunglasses2']) },
+  { key: 'openPeepsFacialHair', label: 'Facial hair', values: optionalNamedOptions(['chin', 'full', 'full2', 'full3', 'full4', 'goatee1', 'goatee2', 'moustache1', 'moustache2', 'moustache3', 'moustache4', 'moustache5', 'moustache6', 'moustache7', 'moustache8', 'moustache9']) },
+  { key: 'openPeepsMask', label: 'Mask', values: optionalNamedOptions(['medicalMask', 'respirator']) },
+  { key: 'openPeepsClothingColor', label: 'Clothing color', values: openPeepsClothingColors },
+  { key: 'openPeepsHeadContrastColor', label: 'Hair color', values: openPeepsHairColors },
+  { key: 'openPeepsSkinColor', label: 'Skin color', values: loreleiSkinOptions }
+];
+
+const customizableStyleParts: Record<string, OtherStylePart[]> = {
+  notionists: notionistsPartOptions,
+  'open-peeps': openPeepsPartOptions
+};
+
+const openPeepsColorableHeads = new Set([
+  'bangs',
+  'cornrows',
+  'grayBun',
+  'grayMedium',
+  'grayShort',
+  'mediumBangs2',
+  'mohawk',
+  'mohawk2',
+  'noHair3',
+  'short4'
+]);
+
+const diceBearBackgrounds = [
+  { id: '8de8d2', label: 'Mint' },
+  { id: 'ffd35a', label: 'Sun' },
+  { id: 'ff9f8f', label: 'Coral' },
+  { id: 'c9b6ff', label: 'Lavender' },
+  { id: '79b9ef', label: 'Ocean' },
+  { id: 'f5f1e8', label: 'Paper' }
+];
+
+function getDiceBearAvatarUrl(avatar: AvatarConfig) {
+  const style = diceBearStyles.some((option) => option.id === avatar.style) ? avatar.style : 'lorelei';
+  const parameters = new URLSearchParams({
+    seed: avatar.seed || defaultAvatar.seed,
+    backgroundColor: avatar.backgroundColor || defaultAvatar.backgroundColor,
+    radius: '16'
+  });
+
+  if (style === 'avataaars') {
+    const topVariant = avatar.headwear !== 'none'
+      ? avatar.headwear
+      : avatar.hairStyle !== 'none'
+        ? avatar.hairStyle
+        : avatar.top;
+    parameters.set('topVariant', topVariant);
+    parameters.set('eyesVariant', avatar.eyesVariant);
+    parameters.set('eyebrowsVariant', avatar.eyebrows);
+    parameters.set('mouthVariant', avatar.mouthVariant);
+    parameters.set('clothesVariant', avatar.clothing);
+    parameters.set('clothesGraphicVariant', avatar.clothingGraphic);
+    parameters.set('clothesColor', avatar.clothingColor);
+    parameters.set('hatColor', avatar.hatColor);
+    parameters.set('accessoriesColor', avatar.accessoriesColor);
+    parameters.set('skinColor', avatar.skinColor);
+    parameters.set('hairColor', avatar.hairColor);
+    if (avatar.accessoriesVariant !== 'none') {
+      parameters.set('accessoriesVariant', avatar.accessoriesVariant);
+      parameters.set('accessoriesProbability', '100');
+    } else {
+      parameters.set('accessoriesProbability', '0');
+    }
+    if (avatar.facialHair !== 'none') {
+      parameters.set('facialHairVariant', avatar.facialHair);
+      parameters.set('facialHairColor', avatar.facialHairColor);
+      parameters.set('facialHairProbability', '100');
+    } else {
+      parameters.set('facialHairProbability', '0');
+    }
+  } else if (style === 'lorelei') {
+    parameters.set('hairVariant', avatar.loreleiHair);
+    parameters.set('headVariant', avatar.loreleiHead);
+    parameters.set('eyesVariant', avatar.loreleiEyes);
+    parameters.set('eyebrowsVariant', avatar.loreleiEyebrows);
+    parameters.set('mouthVariant', avatar.loreleiMouth);
+    parameters.set('noseVariant', avatar.loreleiNose);
+    parameters.set('hairColor', avatar.loreleiHairColor);
+    parameters.set('skinColor', avatar.loreleiSkinColor);
+    parameters.set('eyesColor', avatar.loreleiFeatureColor);
+    parameters.set('eyebrowsColor', avatar.loreleiFeatureColor);
+    parameters.set('mouthColor', avatar.loreleiFeatureColor);
+    parameters.set('noseColor', avatar.loreleiFeatureColor);
+    parameters.set('glassesColor', avatar.loreleiFeatureColor);
+    parameters.set('earringsColor', avatar.loreleiFeatureColor);
+    parameters.set('frecklesColor', avatar.loreleiFeatureColor);
+    parameters.set('hairAccessoriesColor', avatar.loreleiFeatureColor);
+
+    const optionalParts = [
+      ['glasses', avatar.loreleiGlasses],
+      ['earrings', avatar.loreleiEarrings],
+      ['beard', avatar.loreleiBeard],
+      ['freckles', avatar.loreleiFreckles],
+      ['hairAccessories', avatar.loreleiHairAccessories]
+    ];
+    optionalParts.forEach(([part, value]) => {
+      parameters.set(`${part}Probability`, value === 'none' ? '0' : '100');
+      if (value !== 'none') {
+        parameters.set(`${part}Variant`, value);
+      }
+    });
+  } else if (style === 'notionists') {
+    parameters.set('hairVariant', avatar.notionistsHair);
+    parameters.set('clothesVariant', avatar.notionistsClothes);
+    parameters.set('eyesVariant', avatar.notionistsEyes);
+    parameters.set('eyebrowsVariant', avatar.notionistsEyebrows);
+    parameters.set('mouthVariant', avatar.notionistsMouth);
+    parameters.set('noseVariant', avatar.notionistsNose);
+    [
+      ['clothesGraphic', avatar.notionistsClothesGraphic],
+      ['glasses', avatar.notionistsGlasses],
+      ['beard', avatar.notionistsBeard],
+      ['gesture', avatar.notionistsGesture]
+    ].forEach(([part, value]) => {
+      parameters.set(`${part}Probability`, value === 'none' ? '0' : '100');
+      if (value !== 'none') parameters.set(`${part}Variant`, value);
+    });
+  } else if (style === 'open-peeps') {
+    parameters.set('headVariant', avatar.openPeepsHead);
+    parameters.set('expressionVariant', avatar.openPeepsExpression);
+    parameters.set('clothingColor', avatar.openPeepsClothingColor);
+    parameters.set('headContrastColor', avatar.openPeepsHeadContrastColor);
+    parameters.set('skinColor', avatar.openPeepsSkinColor);
+    [
+      ['accessories', avatar.openPeepsAccessories],
+      ['facialHair', avatar.openPeepsFacialHair],
+      ['mask', avatar.openPeepsMask]
+    ].forEach(([part, value]) => {
+      parameters.set(`${part}Probability`, value === 'none' ? '0' : '100');
+      if (value !== 'none') parameters.set(`${part}Variant`, value);
+    });
+  }
+
+  return `https://api.dicebear.com/10.x/${style}/svg?${parameters}`;
+}
 
 const avatarParts: { id: AvatarPart; label: string; icon: string }[] = [
   { id: 'background', label: 'Backdrop', icon: '▣' },
@@ -219,6 +673,13 @@ const avatarOptions: Record<AvatarPart, AvatarOption[]> = {
 
 function LocalAvatar({ avatar, label }: { avatar?: AvatarConfig; label: string }) {
   const activeAvatar = avatar ?? defaultAvatar;
+  return (
+    <span className="local-avatar">
+      <img alt={`${label} avatar`} src={getDiceBearAvatarUrl(activeAvatar)} />
+    </span>
+  );
+
+  /* Legacy renderer retained temporarily for existing asset migration. */
   const backgroundColors: Record<string, string> = {
     mint: '#8de8d2',
     sun: '#ffd35a',
@@ -396,6 +857,10 @@ function LocalAvatar({ avatar, label }: { avatar?: AvatarConfig; label: string }
 }
 
 function App() {
+  const [darkMode, setDarkMode] = useState(() => {
+    const savedTheme = localStorage.getItem('trivai-theme');
+    return savedTheme ? savedTheme === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  });
   const [authMode, setAuthMode] = useState<AuthMode>('login');
   const [authForm, setAuthForm] = useState({
     email: '',
@@ -441,11 +906,14 @@ function App() {
   const [publishedQuestionIndex, setPublishedQuestionIndex] = useState(0);
   const [publishedSelectedAnswer, setPublishedSelectedAnswer] = useState<number | null>(null);
   const [publishedAnswerSubmitted, setPublishedAnswerSubmitted] = useState(false);
+  const [publishedAnswerCorrect, setPublishedAnswerCorrect] = useState<boolean | null>(null);
+  const [publishedAnswerChecking, setPublishedAnswerChecking] = useState(false);
   const [publishedTestScore, setPublishedTestScore] = useState(0);
   const [userTestsFilter, setUserTestsFilter] = useState<'all' | 'mine'>('all');
   const [uploadedTestFile, setUploadedTestFile] = useState<File | null>(null);
   const [saveStatus, setSaveStatus] = useState('');
   const [sessionSaved, setSessionSaved] = useState(false);
+  const [leveledUpTo, setLeveledUpTo] = useState<number | null>(null);
   const [setup, setSetup] = useState<GameSetup>({
     username: '',
     categories: 'history, geography, science',
@@ -473,6 +941,9 @@ function App() {
   const [preloading, setPreloading] = useState(false);
   const [error, setError] = useState('');
   const [showQuitDialog, setShowQuitDialog] = useState(false);
+  const [showDailyReward, setShowDailyReward] = useState(false);
+  const [dailyRewardClaiming, setDailyRewardClaiming] = useState(false);
+  const [dailyRewardMessage, setDailyRewardMessage] = useState('');
   const [connectionIssue, setConnectionIssue] = useState<ConnectionIssue | null>(null);
   const openAiPreviousResponseIdRef = useRef<string | undefined>(undefined);
 
@@ -488,6 +959,11 @@ function App() {
     () => question?.answers.findIndex((answer) => answer.isCorrect) ?? -1,
     [question]
   );
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = darkMode ? 'dark' : 'light';
+    localStorage.setItem('trivai-theme', darkMode ? 'dark' : 'light');
+  }, [darkMode]);
 
   useEffect(() => {
     if (!auth) {
@@ -531,6 +1007,8 @@ function App() {
       ]);
 
       setProfile(loadedProfile);
+      setShowDailyReward(canClaimDailyReward(loadedProfile));
+      setDailyRewardMessage('');
       setConnectionIssue(null);
       openAiPreviousResponseIdRef.current = loadedProfile.openAiPreviousResponseId;
       setLeaderboard(loadedLeaderboard);
@@ -682,10 +1160,25 @@ function App() {
     setSettingsMessage('');
 
     try {
-      const lockedSelections = getLockedAvatarSelections(settingsForm.avatar);
+      const selectedStyle = diceBearStyles.find((style) => style.id === settingsForm.avatar.style);
+      if (selectedStyle && selectedStyle.minLevel > (profile?.level ?? 1)) {
+        setSettingsMessage(`Reach level ${selectedStyle.minLevel} to save the ${selectedStyle.label} style.`);
+        return;
+      }
 
-      if (lockedSelections.length > 0) {
-        setSettingsMessage(`Reach level ${lockedSelections[0].option.minLevel} to save ${lockedSelections[0].option.label}.`);
+      const lockedDiceBearOption = settingsForm.avatar.style === 'avataaars'
+        ? diceBearPartOptions
+            .flatMap((part) => part.values.map((option) => ({ part, option })))
+            .find(({ part, option }) =>
+              settingsForm.avatar[part.key] === option.id &&
+              (option.minLevel ?? 1) > (profile?.level ?? 1)
+            )
+        : undefined;
+
+      if (lockedDiceBearOption) {
+        setSettingsMessage(
+          `Reach level ${lockedDiceBearOption.option.minLevel} to save ${lockedDiceBearOption.option.label}.`
+        );
         return;
       }
 
@@ -776,6 +1269,30 @@ function App() {
     setAnswered(0);
     setCorrectAnswers(0);
     setSessionSaved(false);
+    setShowDailyReward(false);
+    setDailyRewardMessage('');
+  }
+
+  async function handleDailyRewardClaim() {
+    if (!currentUser || !profile || dailyRewardClaiming) {
+      return;
+    }
+
+    setDailyRewardClaiming(true);
+    setDailyRewardMessage('');
+
+    try {
+      const claim = await claimDailyReward(currentUser);
+      setProfile(claim.profile);
+      setLevel(claim.profile.level);
+      setScore(claim.profile.score);
+      setDailyRewardMessage(`Claimed ${claim.reward} XP. Day ${claim.streak} streak!`);
+      setLeaderboard(await getLeaderboard());
+    } catch (err) {
+      setDailyRewardMessage(err instanceof Error ? err.message : 'Could not claim the daily reward.');
+    } finally {
+      setDailyRewardClaiming(false);
+    }
   }
 
   async function finishQuiz() {
@@ -786,19 +1303,29 @@ function App() {
     setSaveStatus('Saving progress...');
 
     try {
-      const platformScore = level * 100 + score;
+      let nextLevel = profile.level;
+      let nextPlayerXp = profile.score + score;
+
+      while (nextPlayerXp >= nextLevel * 150) {
+        nextPlayerXp -= nextLevel * 150;
+        nextLevel += 1;
+      }
+
+      const platformScore = nextLevel * 100 + nextPlayerXp;
       const nextProfile = await saveCompletedSession(currentUser, profile, {
         categories: game.categories,
         difficulty: game.difficulty,
         totalQuestions,
         answeredQuestions: answered,
         correctAnswers,
-        level,
-        score,
+        level: nextLevel,
+        score: nextPlayerXp,
         platformScore
       });
 
       setProfile(nextProfile);
+      setLevel(nextProfile.level);
+      setLeveledUpTo(nextProfile.level > profile.level ? nextProfile.level : null);
       setRecentSessions(await getRecentSessions(currentUser));
       setSessionSaved(true);
       setSaveStatus('Progress saved.');
@@ -824,15 +1351,12 @@ function App() {
     setUsedHelpers({ fiftyFifty: false, revealAnswer: false, hint: false });
     resetQuestionUi();
     setScore(0);
-    setLevel(1);
+    setLevel(activeProfile?.level ?? 1);
     setAnswered(0);
     setCorrectAnswers(0);
     setSaveStatus('');
     setSessionSaved(false);
-    if (activeProfile) {
-      setScore(activeProfile.score);
-      setLevel(activeProfile.level);
-    }
+    setLeveledUpTo(null);
     setShowQuitDialog(false);
     void fetchQuestion(activeSetup, []);
   }
@@ -844,13 +1368,14 @@ function App() {
     setPreviousQuestions([]);
     setUsedHelpers({ fiftyFifty: false, revealAnswer: false, hint: false });
     resetQuestionUi();
-    setScore(profile?.score ?? 0);
+    setScore(0);
     setLevel(profile?.level ?? 1);
     setAnswered(0);
     setCorrectAnswers(0);
     setError('');
     setSaveStatus('');
     setSessionSaved(false);
+    setLeveledUpTo(null);
     setShowQuitDialog(false);
   }
 
@@ -858,8 +1383,210 @@ function App() {
     const shuffled = [...combinedCategories].sort(() => Math.random() - 0.5);
     setSetup((current) => ({
       ...current,
-      categories: shuffled.slice(0, 4).join(', ')
+      categories: shuffled.slice(0, 3).join(', ')
     }));
+  }
+
+  function updateDiceBearAvatar(update: Partial<AvatarConfig>) {
+    setSettingsForm((current) => ({
+      ...current,
+      avatar: {
+        ...current.avatar,
+        ...update
+      }
+    }));
+  }
+
+  function cycleDiceBearPart(
+    part: (typeof diceBearPartOptions)[number],
+    direction: -1 | 1
+  ) {
+    if (getDiceBearPartDisabledReason(part.key)) {
+      return;
+    }
+
+    const currentValue = settingsForm.avatar[part.key];
+    const currentIndex = Math.max(0, part.values.findIndex((option) => option.id === currentValue));
+    const nextIndex = (currentIndex + direction + part.values.length) % part.values.length;
+    const nextValue = part.values[nextIndex].id;
+    if (part.key === 'hairStyle') {
+      updateDiceBearAvatar({
+        hairStyle: nextValue,
+        headwear: 'none',
+        top: nextValue === 'none' ? settingsForm.avatar.top : nextValue
+      });
+      return;
+    }
+    if (part.key === 'headwear') {
+      updateDiceBearAvatar({
+        headwear: nextValue,
+        top: nextValue === 'none' ? settingsForm.avatar.hairStyle : nextValue
+      });
+      return;
+    }
+
+    updateDiceBearAvatar({ [part.key]: nextValue });
+  }
+
+  function cycleLoreleiPart(part: (typeof loreleiPartOptions)[number], direction: -1 | 1) {
+    const currentValue = settingsForm.avatar[part.key];
+    const currentIndex = Math.max(0, part.values.findIndex((option) => option.id === currentValue));
+    const nextIndex = (currentIndex + direction + part.values.length) % part.values.length;
+    updateDiceBearAvatar({ [part.key]: part.values[nextIndex].id });
+  }
+
+  function cycleOtherStylePart(part: OtherStylePart, direction: -1 | 1) {
+    if (getOtherStylePartDisabledReason(part)) {
+      return;
+    }
+
+    const currentValue = settingsForm.avatar[part.key];
+    const currentIndex = Math.max(0, part.values.findIndex((option) => option.id === currentValue));
+    const nextIndex = (currentIndex + direction + part.values.length) % part.values.length;
+    updateDiceBearAvatar({ [part.key]: part.values[nextIndex].id });
+  }
+
+  function getOtherStylePartDisabledReason(part: OtherStylePart) {
+    if (
+      part.key === 'openPeepsHeadContrastColor' &&
+      !openPeepsColorableHeads.has(settingsForm.avatar.openPeepsHead)
+    ) {
+      return 'This Open Peeps head style has a fixed hair color.';
+    }
+
+    return '';
+  }
+
+  function getDiceBearPartDisabledReason(part: (typeof diceBearPartOptions)[number]['key']) {
+    const avatar = settingsForm.avatar;
+    switch (part) {
+      case 'hatColor':
+        return avatar.headwear !== 'none' ? '' : 'Choose headwear first.';
+      case 'hairColor':
+        return avatar.hairStyle === 'none' || avatar.headwear !== 'none'
+          ? 'Choose visible hair first.'
+          : '';
+      case 'facialHairColor':
+        return avatar.facialHair === 'none' ? 'Choose facial hair first.' : '';
+      case 'accessoriesColor':
+        return avatar.accessoriesVariant === 'none' ? 'Choose an accessory first.' : '';
+      case 'clothingGraphic':
+        return avatar.clothing === 'graphicShirt' ? '' : 'Choose Graphic Shirt clothing first.';
+      default:
+        return '';
+    }
+  }
+
+  function randomizeDiceBearAvatar() {
+    if (settingsForm.avatar.style === 'lorelei') {
+      const randomParts = Object.fromEntries(
+        loreleiPartOptions.map((part) => [
+          part.key,
+          part.values[Math.floor(Math.random() * part.values.length)]?.id
+        ])
+      ) as Partial<AvatarConfig>;
+
+      updateDiceBearAvatar({
+        ...randomParts,
+        seed: `${settingsForm.displayName || 'Player'}-${crypto.randomUUID()}`
+      });
+      return;
+    }
+
+    const otherStyleParts = customizableStyleParts[settingsForm.avatar.style];
+    if (otherStyleParts) {
+      const randomParts = Object.fromEntries(
+        otherStyleParts.map((part) => [
+          part.key,
+          part.values[Math.floor(Math.random() * part.values.length)]?.id
+        ])
+      ) as Partial<AvatarConfig>;
+      updateDiceBearAvatar({
+        ...randomParts,
+        seed: `${settingsForm.displayName || 'Player'}-${crypto.randomUUID()}`
+      });
+      return;
+    }
+
+    const level = profile?.level ?? 1;
+    const randomParts = Object.fromEntries(
+      diceBearPartOptions.map((part) => {
+        const availableValues = part.values.filter((option) => (option.minLevel ?? 1) <= level);
+        const randomValue = availableValues[Math.floor(Math.random() * availableValues.length)]?.id;
+        return [part.key, randomValue];
+      })
+    ) as Partial<AvatarConfig>;
+
+    const randomizedHeadwear = randomParts.headwear ?? 'none';
+    const randomizedHair = randomizedHeadwear === 'none' ? randomParts.hairStyle ?? 'shortFlat' : 'none';
+
+    updateDiceBearAvatar({
+      ...randomParts,
+      seed: `${settingsForm.displayName || 'Player'}-${crypto.randomUUID()}`,
+      hairStyle: randomizedHair,
+      headwear: randomizedHeadwear,
+      top: randomizedHeadwear !== 'none' ? randomizedHeadwear : randomizedHair
+    });
+  }
+
+  function clearDiceBearOptionalItems() {
+    if (settingsForm.avatar.style === 'lorelei') {
+      updateDiceBearAvatar({
+        loreleiGlasses: 'none',
+        loreleiEarrings: 'none',
+        loreleiBeard: 'none',
+        loreleiFreckles: 'none',
+        loreleiHairAccessories: 'none'
+      });
+      return;
+    }
+
+    if (settingsForm.avatar.style === 'notionists') {
+      updateDiceBearAvatar({
+        notionistsClothesGraphic: 'none',
+        notionistsGlasses: 'none',
+        notionistsBeard: 'none',
+        notionistsGesture: 'none'
+      });
+      return;
+    }
+
+    if (settingsForm.avatar.style === 'open-peeps') {
+      updateDiceBearAvatar({
+        openPeepsAccessories: 'none',
+        openPeepsFacialHair: 'none',
+        openPeepsMask: 'none'
+      });
+      return;
+    }
+
+    updateDiceBearAvatar({
+      hairStyle: 'none',
+      headwear: 'none',
+      accessoriesVariant: 'none',
+      facialHair: 'none',
+      clothing: 'shirtCrewNeck'
+    });
+  }
+
+  function toggleCategory(category: string) {
+    setSetup((current) => {
+      const selectedCategories = current.categories
+        .split(',')
+        .map((item) => item.trim())
+        .filter(Boolean);
+      const isSelected = selectedCategories.some(
+        (item) => item.toLocaleLowerCase() === category.toLocaleLowerCase()
+      );
+      const nextCategories = isSelected
+        ? selectedCategories.filter((item) => item.toLocaleLowerCase() !== category.toLocaleLowerCase())
+        : [...selectedCategories, category];
+
+      return {
+        ...current,
+        categories: nextCategories.join(', ')
+      };
+    });
   }
 
   function formatDate(date?: Date) {
@@ -918,12 +1645,120 @@ function App() {
         <TrivAiDock
           activeApp={appView}
           apps={[
-            { id: 'custom-test', name: 'Create test', icon: '+' },
-            { id: 'upload-test', name: 'Upload test', icon: 'UP' },
-            { id: 'my-tests', name: 'My Tests', icon: 'M' },
-            { id: 'user-tests', name: 'User Tests', icon: 'U' },
-            { id: 'dashboard', name: 'Dashboard', icon: 'D' },
-            { id: 'settings', name: 'Account', icon: 'A' }
+            {
+              id: 'custom-test',
+              name: 'Create test',
+              icon: (
+                <svg
+                  aria-hidden="true"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                  <path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z" />
+                </svg>
+              )
+            },
+            {
+              id: 'upload-test',
+              name: 'Upload test',
+              icon: (
+                <svg
+                  aria-hidden="true"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M12 3v12" />
+                  <path d="m17 8-5-5-5 5" />
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                </svg>
+              )
+            },
+            {
+              id: 'my-tests',
+              name: 'My Tests',
+              icon: (
+                <svg
+                  aria-hidden="true"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M11.5 15H7a4 4 0 0 0-4 4v2" />
+                  <path d="M21.378 16.626a1 1 0 0 0-3.004-3.004l-4.01 4.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z" />
+                  <circle cx="10" cy="7" r="4" />
+                </svg>
+              )
+            },
+            {
+              id: 'user-tests',
+              name: 'User Tests',
+              icon: (
+                <svg
+                  aria-hidden="true"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                  <circle cx="9" cy="7" r="4" />
+                  <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                </svg>
+              )
+            },
+            {
+              id: 'dashboard',
+              name: 'Dashboard',
+              icon: (
+                <svg
+                  aria-hidden="true"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M13 17V9" />
+                  <path d="M18 17v-3" />
+                  <path d="M3 3v16a2 2 0 0 0 2 2h16" />
+                  <path d="M8 17V5" />
+                </svg>
+              )
+            },
+            {
+              id: 'settings',
+              name: 'Settings',
+              icon: (
+                <svg
+                  aria-hidden="true"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+              )
+            }
           ]}
           onAppClick={(appId) => {
             if (appId === 'user-tests') {
@@ -932,6 +1767,68 @@ function App() {
             setAppView(appId as AppView);
           }}
         />
+        {showDailyReward && profile && (
+          <div className="modal-backdrop daily-reward-backdrop" role="presentation">
+            <section className="modal daily-reward-modal" role="dialog" aria-modal="true" aria-labelledby="daily-reward-title">
+              <div>
+                <p className="eyebrow">Daily login reward</p>
+                <h2 id="daily-reward-title">Keep your streak going</h2>
+              </div>
+              <div className="daily-reward-calendar">
+                {dailyRewardPoints.map((reward, index) => {
+                  const justClaimed = dailyRewardMessage.startsWith('Claimed');
+                  const activeDay = justClaimed
+                    ? (profile.dailyRewardStreak - 1) % dailyRewardPoints.length
+                    : profile.dailyRewardStreak % dailyRewardPoints.length;
+                  const isClaimed = justClaimed ? index <= activeDay : index < activeDay;
+                  const isToday = index === activeDay;
+
+                  return (
+                    <div className={`daily-reward-day${isClaimed ? ' claimed' : ''}${isToday ? ' today' : ''}`} key={reward}>
+                      <span>Day {index + 1}</span>
+                      <strong>{reward} XP</strong>
+                      <small>
+                        {isClaimed ? (
+                          'Claimed'
+                        ) : isToday ? (
+                          'Today'
+                        ) : (
+                          <span className="daily-reward-lock" aria-label="Locked day" title="Locked day">
+                            <svg
+                              aria-hidden="true"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth="2"
+                              viewBox="0 0 24 24"
+                            >
+                              <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+                              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                            </svg>
+                          </span>
+                        )}
+                      </small>
+                    </div>
+                  );
+                })}
+              </div>
+              {dailyRewardMessage && <p className="daily-reward-message">{dailyRewardMessage}</p>}
+              <div className="modal-actions">
+                <button className="secondary" type="button" onClick={() => setShowDailyReward(false)}>
+                  {dailyRewardMessage.startsWith('Claimed') ? 'Continue' : 'Later'}
+                </button>
+                {!dailyRewardMessage.startsWith('Claimed') && (
+                  <button type="button" disabled={dailyRewardClaiming} onClick={() => void handleDailyRewardClaim()}>
+                    {dailyRewardClaiming
+                      ? 'Claiming...'
+                      : `Claim ${dailyRewardPoints[profile.dailyRewardStreak % dailyRewardPoints.length]} XP`}
+                  </button>
+                )}
+              </div>
+            </section>
+          </div>
+        )}
       </>
     );
   }
@@ -1072,19 +1969,35 @@ function App() {
     setPublishedQuestionIndex(0);
     setPublishedSelectedAnswer(null);
     setPublishedAnswerSubmitted(false);
+    setPublishedAnswerCorrect(null);
+    setPublishedAnswerChecking(false);
     setPublishedTestScore(0);
   }
 
-  function submitPublishedAnswer() {
-    if (!activePublishedTest || publishedSelectedAnswer === null) {
+  async function submitPublishedAnswer() {
+    if (!currentUser || !activePublishedTest || publishedSelectedAnswer === null) {
       return;
     }
 
-    const activeQuestion = activePublishedTest.questions[publishedQuestionIndex];
-    if (publishedSelectedAnswer === activeQuestion.correctAnswer) {
-      setPublishedTestScore((score) => score + 1);
+    setPublishedAnswerChecking(true);
+
+    try {
+      const isCorrect = await checkPublishedTestAnswer(
+        currentUser,
+        activePublishedTest.id,
+        publishedQuestionIndex,
+        publishedSelectedAnswer
+      );
+      setPublishedAnswerCorrect(isCorrect);
+      if (isCorrect) {
+        setPublishedTestScore((score) => score + 1);
+      }
+      setPublishedAnswerSubmitted(true);
+    } catch (err) {
+      setAuthMessage(err instanceof Error ? err.message : 'Could not check answer.');
+    } finally {
+      setPublishedAnswerChecking(false);
     }
-    setPublishedAnswerSubmitted(true);
   }
 
   function nextPublishedQuestion() {
@@ -1095,6 +2008,7 @@ function App() {
     setPublishedQuestionIndex((index) => index + 1);
     setPublishedSelectedAnswer(null);
     setPublishedAnswerSubmitted(false);
+    setPublishedAnswerCorrect(null);
   }
 
   function renderSiteHeader() {
@@ -1108,6 +2022,14 @@ function App() {
           <a href="#play">Play</a>
           <a href="#features">Features</a>
           <a href="#leaderboard">Leaderboard</a>
+          <button
+            aria-label={`Switch to ${darkMode ? 'light' : 'dark'} mode`}
+            className="secondary compact theme-toggle"
+            type="button"
+            onClick={() => setDarkMode((current) => !current)}
+          >
+            {darkMode ? 'Light mode' : 'Dark mode'}
+          </button>
         </nav>
       </header>
     );
@@ -1125,14 +2047,7 @@ function App() {
 
     if (question.answers[selectedAnswer].isCorrect) {
       setCorrectAnswers((value) => value + 1);
-      setScore((value) => {
-        const nextScore = value + 100;
-        if (nextScore >= level * 150) {
-          setLevel((current) => current + 1);
-          return 0;
-        }
-        return nextScore;
-      });
+      setScore((value) => value + 100);
     }
   }
 
@@ -1490,7 +2405,7 @@ function App() {
             </div>
             <div className="account-note">
               <p className="muted">
-                Saving and publishing will be connected when custom tests are added to the backend.
+                Custom tests are validated by the API and saved securely in Firebase.
               </p>
             </div>
             {customTestMessage && (
@@ -1647,14 +2562,13 @@ function App() {
                 <h2>{activeQuestion.prompt}</h2>
                 <div className="published-answer-list">
                   {activeQuestion.answers.map((answer, answerIndex) => {
-                    const isCorrect = answerIndex === activeQuestion.correctAnswer;
                     const isSelected = answerIndex === publishedSelectedAnswer;
                     const answerClass = publishedAnswerSubmitted
-                      ? isCorrect
-                        ? 'correct'
-                        : isSelected
-                          ? 'wrong'
-                          : ''
+                      ? isSelected
+                        ? publishedAnswerCorrect
+                          ? 'correct'
+                          : 'wrong'
+                        : ''
                       : isSelected
                         ? 'selected'
                         : '';
@@ -1673,8 +2587,12 @@ function App() {
                   })}
                 </div>
                 {!publishedAnswerSubmitted ? (
-                  <button type="button" disabled={publishedSelectedAnswer === null} onClick={submitPublishedAnswer}>
-                    Submit answer
+                  <button
+                    type="button"
+                    disabled={publishedSelectedAnswer === null || publishedAnswerChecking}
+                    onClick={() => void submitPublishedAnswer()}
+                  >
+                    {publishedAnswerChecking ? 'Checking...' : 'Submit answer'}
                   </button>
                 ) : (
                   <button type="button" onClick={nextPublishedQuestion}>
@@ -1752,7 +2670,20 @@ function App() {
   }
 
   if (!game && appView === 'settings') {
-    const lockedAvatarSelections = getLockedAvatarSelections(settingsForm.avatar);
+    const lockedAvatarSelections: ReturnType<typeof getLockedAvatarSelections> = [];
+    const lockedDiceBearSelections = settingsForm.avatar.style === 'avataaars'
+      ? diceBearPartOptions
+          .flatMap((part) => part.values.map((option) => ({ part, option })))
+          .filter(({ part, option }) =>
+            settingsForm.avatar[part.key] === option.id &&
+            (option.minLevel ?? 1) > (profile?.level ?? 1)
+          )
+      : [];
+    const firstLockedDiceBearSelection = lockedDiceBearSelections[0];
+    const selectedAvatarStyle = diceBearStyles.find((style) => style.id === settingsForm.avatar.style);
+    const lockedAvatarStyle = selectedAvatarStyle && selectedAvatarStyle.minLevel > (profile?.level ?? 1)
+      ? selectedAvatarStyle
+      : undefined;
 
     return (
       <main className="app-shell logged-in-shell">
@@ -1785,6 +2716,185 @@ function App() {
             <div className="avatar-creator" aria-label="Avatar creator">
               <div className="avatar-stage">
                 <LocalAvatar avatar={settingsForm.avatar} label={settingsForm.displayName || 'Player'} />
+                {firstLockedDiceBearSelection && (
+                  <div className="avatar-lock-warning">
+                    <strong>Preview only</strong>
+                    <span>
+                      {firstLockedDiceBearSelection.option.label} unlocks at level{' '}
+                      {firstLockedDiceBearSelection.option.minLevel}
+                    </span>
+                  </div>
+                )}
+                {lockedAvatarStyle && (
+                  <div className="avatar-lock-warning">
+                    <strong>Preview only</strong>
+                    <span>{lockedAvatarStyle.label} unlocks at level {lockedAvatarStyle.minLevel}</span>
+                  </div>
+                )}
+                <button className="secondary" type="button" onClick={randomizeDiceBearAvatar}>
+                  Randomize avatar
+                </button>
+                <button className="secondary" type="button" onClick={clearDiceBearOptionalItems}>
+                  Set optional items to none
+                </button>
+              </div>
+
+              <div className="dicebear-controls">
+                <label>
+                  Avatar style
+                  <select
+                    value={settingsForm.avatar.style}
+                    onChange={(event) => updateDiceBearAvatar({ style: event.target.value })}
+                  >
+                    {diceBearStyles.map((style) => (
+                      <option
+                        disabled={style.minLevel > (profile?.level ?? 1)}
+                        key={style.id}
+                        value={style.id}
+                      >
+                        {style.label}{style.minLevel > 1 ? ` - Level ${style.minLevel}` : ''}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <div>
+                  <p className="dicebear-control-label">Background</p>
+                  <div className="dicebear-backgrounds">
+                    {diceBearBackgrounds.map((background) => (
+                      <button
+                        aria-label={background.label}
+                        aria-pressed={settingsForm.avatar.backgroundColor === background.id}
+                        className={settingsForm.avatar.backgroundColor === background.id ? 'selected' : ''}
+                        key={background.id}
+                        style={{ backgroundColor: `#${background.id}` }}
+                        title={background.label}
+                        type="button"
+                        onClick={() => updateDiceBearAvatar({ backgroundColor: background.id })}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                {settingsForm.avatar.style === 'avataaars' && (
+                  <div className="dicebear-part-list">
+                    {orderedDiceBearPartOptions.map((part) => {
+                      const currentValue = settingsForm.avatar[part.key];
+                      const currentOption = part.values.find((option) => option.id === currentValue) ?? part.values[0];
+                      const disabledReason = getDiceBearPartDisabledReason(part.key);
+                      const currentOptionLocked = (currentOption.minLevel ?? 1) > (profile?.level ?? 1);
+
+                      return (
+                        <div
+                          className={`dicebear-part-row${disabledReason ? ' disabled' : ''}`}
+                          key={part.key}
+                          title={disabledReason}
+                        >
+                          <button
+                            aria-label={`Previous ${part.label}`}
+                            className="secondary avatar-icon-button"
+                            disabled={Boolean(disabledReason)}
+                            type="button"
+                            onClick={() => cycleDiceBearPart(part, -1)}
+                          >
+                            ‹
+                          </button>
+                          <div>
+                            <span>{part.label}</span>
+                            <strong>{currentOption.label}</strong>
+                            {currentOptionLocked && <small>Locked until level {currentOption.minLevel}</small>}
+                            {disabledReason && <small>{disabledReason}</small>}
+                          </div>
+                          <button
+                            aria-label={`Next ${part.label}`}
+                            className="secondary avatar-icon-button"
+                            disabled={Boolean(disabledReason)}
+                            type="button"
+                            onClick={() => cycleDiceBearPart(part, 1)}
+                          >
+                            ›
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {settingsForm.avatar.style === 'lorelei' && (
+                  <div className="dicebear-part-list">
+                    {loreleiPartOptions.map((part) => {
+                      const currentValue = settingsForm.avatar[part.key];
+                      const currentOption = part.values.find((option) => option.id === currentValue) ?? part.values[0];
+
+                      return (
+                        <div className="dicebear-part-row" key={part.key}>
+                          <button
+                            aria-label={`Previous ${part.label}`}
+                            className="secondary avatar-icon-button"
+                            type="button"
+                            onClick={() => cycleLoreleiPart(part, -1)}
+                          >
+                            â€¹
+                          </button>
+                          <div>
+                            <span>{part.label}</span>
+                            <strong>{currentOption.label}</strong>
+                          </div>
+                          <button
+                            aria-label={`Next ${part.label}`}
+                            className="secondary avatar-icon-button"
+                            type="button"
+                            onClick={() => cycleLoreleiPart(part, 1)}
+                          >
+                            â€º
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {customizableStyleParts[settingsForm.avatar.style] && (
+                  <div className="dicebear-part-list">
+                    {customizableStyleParts[settingsForm.avatar.style].map((part) => {
+                      const currentValue = settingsForm.avatar[part.key];
+                      const currentOption = part.values.find((option) => option.id === currentValue) ?? part.values[0];
+                      const disabledReason = getOtherStylePartDisabledReason(part);
+
+                      return (
+                        <div
+                          className={`dicebear-part-row${disabledReason ? ' disabled' : ''}`}
+                          key={part.key}
+                          title={disabledReason}
+                        >
+                          <button
+                            aria-label={`Previous ${part.label}`}
+                            className="secondary avatar-icon-button"
+                            disabled={Boolean(disabledReason)}
+                            type="button"
+                            onClick={() => cycleOtherStylePart(part, -1)}
+                          >
+                            â€¹
+                          </button>
+                          <div>
+                            <span>{part.label}</span>
+                            <strong>{currentOption.label}</strong>
+                            {disabledReason && <small>{disabledReason}</small>}
+                          </div>
+                          <button
+                            aria-label={`Next ${part.label}`}
+                            className="secondary avatar-icon-button"
+                            disabled={Boolean(disabledReason)}
+                            type="button"
+                            onClick={() => cycleOtherStylePart(part, 1)}
+                          >
+                            â€º
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
 
               <div className="avatar-control-list" aria-label="Avatar categories">
@@ -1832,7 +2942,10 @@ function App() {
             )}
 
             <div className="form-actions">
-              <button type="submit" disabled={settingsSaving || lockedAvatarSelections.length > 0}>
+              <button
+                type="submit"
+                disabled={settingsSaving || lockedDiceBearSelections.length > 0 || Boolean(lockedAvatarStyle)}
+              >
                 {settingsSaving ? 'Saving...' : 'Save changes'}
               </button>
               <button className="secondary" type="button" onClick={() => setAppView('setup')}>
@@ -1842,6 +2955,55 @@ function App() {
           </form>
 
           <section className="panel settings-panel">
+            <div>
+              <p className="eyebrow">Appearance</p>
+              <h2>Theme</h2>
+            </div>
+            <button
+              aria-label={`Switch to ${darkMode ? 'light' : 'dark'} mode`}
+              aria-pressed={darkMode}
+              className={`theme-switch${darkMode ? ' dark' : ''}`}
+              role="switch"
+              type="button"
+              onClick={() => setDarkMode((current) => !current)}
+            >
+              <span className="theme-switch-option" aria-hidden="true">
+                <svg
+                  fill="none"
+                  stroke="currentColor"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                >
+                  <circle cx="12" cy="12" r="4" />
+                  <path d="M12 2v2" />
+                  <path d="M12 20v2" />
+                  <path d="m4.93 4.93 1.41 1.41" />
+                  <path d="m17.66 17.66 1.41 1.41" />
+                  <path d="M2 12h2" />
+                  <path d="M20 12h2" />
+                  <path d="m6.34 17.66-1.41 1.41" />
+                  <path d="m19.07 4.93-1.41 1.41" />
+                </svg>
+              </span>
+              <span className="theme-switch-option" aria-hidden="true">
+                <svg
+                  fill="none"
+                  stroke="currentColor"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401" />
+                </svg>
+              </span>
+              <span className="theme-switch-thumb" aria-hidden="true" />
+            </button>
+
+            <div className="settings-divider" />
+
             <div>
               <p className="eyebrow">Profile summary</p>
               <h2>Saved progress</h2>
@@ -1864,11 +3026,6 @@ function App() {
                 <strong>{getProfileAccuracy()}%</strong>
               </div>
             </div>
-            <div className="account-note">
-              <p className="muted">
-                Avatars are saved as small profile settings in Firestore. No image uploads or Firebase Storage bucket are needed.
-              </p>
-            </div>
           </section>
         </section>
       </main>
@@ -1881,9 +3038,12 @@ function App() {
         {renderHotbar()}
         <section className="dashboard-layout">
           <div className="panel dashboard-panel">
-            <div>
-              <p className="eyebrow">Dashboard</p>
-              <h1>Your stats</h1>
+            <div className="dashboard-heading">
+              <div>
+                <p className="eyebrow">Dashboard</p>
+                <h1>Your stats</h1>
+              </div>
+              <BrainAnimation />
             </div>
 
             <div className="dashboard-grid">
@@ -1990,8 +3150,8 @@ function App() {
               Pick a topic mix, choose the pace, and start a generated trivia session from your saved profile.
             </p>
           </div>
-          <figure className="hero-visual">
-            <img src={heroImage} alt="" />
+          <figure className="hero-visual menu-robot">
+            <InteractiveRobotSpline scene={robotSceneUrl} className="menu-robot-scene" />
           </figure>
         </section>
         <section className="setup-layout">
@@ -2048,6 +3208,39 @@ function App() {
               Pick combined categories
             </button>
 
+            <details className="category-picker">
+              <summary>Browse all categories</summary>
+              <div className="category-picker-header">
+                <span>Click categories to select or remove them.</span>
+                <button
+                  className="secondary compact"
+                  type="button"
+                  onClick={() => setSetup((current) => ({ ...current, categories: '' }))}
+                >
+                  Clear
+                </button>
+              </div>
+              <div className="category-picker-list">
+                {combinedCategories.map((category) => {
+                  const isSelected = setup.categories
+                    .split(',')
+                    .some((item) => item.trim().toLocaleLowerCase() === category.toLocaleLowerCase());
+
+                  return (
+                    <button
+                      className={`category-picker-option${isSelected ? ' selected' : ''}`}
+                      key={category}
+                      type="button"
+                      aria-pressed={isSelected}
+                      onClick={() => toggleCategory(category)}
+                    >
+                      {category}
+                    </button>
+                  );
+                })}
+              </div>
+            </details>
+
             <div className="grid-two">
               <label>
                 Difficulty
@@ -2101,7 +3294,10 @@ function App() {
                 {leaderboard.map((entry, index) => (
                   <li className={entry.uid === currentUser.uid ? 'current-player' : ''} key={entry.uid}>
                     <span className="rank">{index + 1}</span>
-                    <span>{entry.displayName}</span>
+                    <span className="leaderboard-player">
+                      <span>{entry.displayName}</span>
+                      {index === 0 && entry.uid === currentUser.uid && <WinnerAnimation />}
+                    </span>
                     <strong>{entry.platformScore}</strong>
                   </li>
                 ))}
@@ -2122,9 +3318,19 @@ function App() {
           <p className="eyebrow">TrivAI Web</p>
           <h1>Quiz session</h1>
         </div>
-        <button className="secondary compact" type="button" onClick={() => setShowQuitDialog(true)}>
-          Quit quiz
-        </button>
+        <div className="actions">
+          <button
+            aria-label={`Switch to ${darkMode ? 'light' : 'dark'} mode`}
+            className="secondary compact theme-toggle"
+            type="button"
+            onClick={() => setDarkMode((current) => !current)}
+          >
+            {darkMode ? 'Light mode' : 'Dark mode'}
+          </button>
+          <button className="secondary compact" type="button" onClick={() => setShowQuitDialog(true)}>
+            Quit quiz
+          </button>
+        </div>
       </section>
 
       <section className="topbar">
@@ -2133,7 +3339,7 @@ function App() {
           <strong>{game.username}</strong>
         </div>
         <div className="stat-card">
-          <p className="eyebrow">XP Score</p>
+          <p className="eyebrow">Quiz XP</p>
           <strong>{score}</strong>
         </div>
         <div className="stat-card">
@@ -2161,11 +3367,21 @@ function App() {
 
         {gameFinished ? (
           <div className="centered">
+            {correctAnswers === totalQuestions && <ConfettiAnimation />}
             <div>
               <p className="eyebrow">Game over</p>
               <h1>Session complete</h1>
             </div>
-            <p>You reached level {level} with {score} XP left on the current level.</p>
+            {leveledUpTo !== null && (
+              <div className="level-up-message animate__animated animate__zoomInDown">
+                <span>Leveled Up!</span>
+                <strong>Level {leveledUpTo}</strong>
+              </div>
+            )}
+            <p>
+              You earned {score} XP in this quiz. Your player is now level {profile?.level ?? level}
+              {' '}with {profile?.score ?? 0} XP on the current level.
+            </p>
             {saveStatus && <p className={saveStatus === 'Progress saved.' ? 'success' : 'muted'}>{saveStatus}</p>}
             <button type="button" onClick={() => setGame(null)}>
               Back to setup
@@ -2173,7 +3389,7 @@ function App() {
           </div>
         ) : loading ? (
           <div className="centered">
-            <div className="loader" />
+            <QuizLoadingAnimation />
             <p>Generating a new question...</p>
           </div>
         ) : question ? (

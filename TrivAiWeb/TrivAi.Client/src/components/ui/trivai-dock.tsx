@@ -1,9 +1,9 @@
-import { useCallback, useState, type MouseEvent } from 'react';
+import { useCallback, useState, type MouseEvent, type ReactNode } from 'react';
 
 export type TrivAiDockItem = {
   id: string;
   name: string;
-  icon: string;
+  icon: ReactNode;
 };
 
 type TrivAiDockProps = {

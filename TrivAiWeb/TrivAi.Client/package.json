@@ -9,8 +9,13 @@
     "preview": "vite preview --host 127.0.0.1"
   },
   "dependencies": {
+    "@dicebear/core": "^10.2.0",
+    "@dicebear/styles": "^10.2.0",
+    "@splinetool/react-spline": "^4.1.0",
     "@vitejs/plugin-react": "^5.0.0",
+    "animate.css": "^4.1.1",
     "firebase": "^12.13.0",
+    "lottie-react": "^2.4.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "typescript": "^5.9.0",
