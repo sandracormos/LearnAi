@@ -32,6 +32,23 @@ Enable Email/Password Authentication and Cloud Firestore in Firebase.
 
 Publish the rules from `firestore.rules` in Firebase Console.
 
+## Graphics and Visual Systems
+
+The app includes a few graphics-focused pieces that are useful to mention in a computer graphics presentation:
+
+- `SVG icons` for navigation, settings, and status indicators.
+  These are vector-based, so they stay sharp at any size and are easy to recolor through CSS.
+- `Lottie animations` for loading, confetti, winner feedback, and dashboard visuals.
+  They are JSON animations rendered in the browser, which makes them lighter and easier to reuse than video files.
+- `Avatar composition` built from layered parts such as face, hair, accessories, clothing, and background.
+  The avatar is assembled from separate visual layers, which makes it customizable without needing a new image for every variation.
+- `Theme switching` that updates the same interface between light and dark visual modes.
+  The app keeps one layout and swaps the visual palette through state-driven styling, which is a clean way to support multiple presentation modes.
+- `Daily reward calendar` that uses visual states like claimed, today, and locked.
+  This turns progress into a visible interface element instead of a hidden value.
+- `XP and progress UI` that turns score and streaks into visible game feedback.
+  The interface uses bars, counters, and highlighted states to make advancement feel immediate and understandable.
+
 ## Run
 
 Start the API:
