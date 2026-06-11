@@ -53,12 +53,12 @@ The app includes a few graphics-focused pieces that are useful to mention in a c
 
 ### Animation previews
 
-<p>
-  <img src="LottieAnimations/brain.png" alt="Brain preview" width="170" />
-  <img src="LottieAnimations/Winner.png" alt="Winner preview" width="170" />
-  <img src="LottieAnimations/Robot.png" alt="Robot preview" width="170" />
-  <img src="LottieAnimations/svgIcons.png" alt="SVG icons preview" width="170" />
-</p>
+| Preview | Use |
+| --- | --- |
+| <img src="LottieAnimations/brain.png" alt="Brain preview" width="120" /> | Dashboard brain animation |
+| <img src="LottieAnimations/Winner.png" alt="Winner preview" width="120" /> | Winner / leaderboard highlight |
+| <img src="LottieAnimations/Robot.png" alt="Robot preview" width="120" /> | Menu robot visual |
+| <img src="LottieAnimations/svgIcons.png" alt="SVG icons preview" width="120" /> | Icon set preview |
 
 ## Run
 
@@ -78,3 +78,4 @@ npm run dev -- --port 5173
 ```
 
 Open `http://127.0.0.1:5173`.
+****
