@@ -1,4 +1,4 @@
-# TrivAI Web
+# LearnAi
 
 Trivia web app built with React, ASP.NET Core, Firebase, and OpenAI.
 
