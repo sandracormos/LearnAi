@@ -40,6 +40,8 @@ The app includes a few graphics-focused pieces that are useful to mention in a c
   These are vector-based, so they stay sharp at any size and are easy to recolor through CSS.
 - `Lottie animations` for loading, confetti, winner feedback, and dashboard visuals.
   They are JSON animations rendered in the browser, which makes them lighter and easier to reuse than video files.
+- `Static PNG previews` for the same animation set.
+  These are useful in documentation and presentation material when you want a quick visual reference without playing the animation.
 - `Avatar composition` built from layered parts such as face, hair, accessories, clothing, and background.
   The avatar is assembled from separate visual layers, which makes it customizable without needing a new image for every variation.
 - `Theme switching` that updates the same interface between light and dark visual modes.
@@ -48,6 +50,15 @@ The app includes a few graphics-focused pieces that are useful to mention in a c
   This turns progress into a visible interface element instead of a hidden value.
 - `XP and progress UI` that turns score and streaks into visible game feedback.
   The interface uses bars, counters, and highlighted states to make advancement feel immediate and understandable.
+
+### Animation previews
+
+<p>
+  <img src="LottieAnimations/brain.png" alt="Brain preview" width="170" />
+  <img src="LottieAnimations/Winner.png" alt="Winner preview" width="170" />
+  <img src="LottieAnimations/Robot.png" alt="Robot preview" width="170" />
+  <img src="LottieAnimations/svgIcons.png" alt="SVG icons preview" width="170" />
+</p>
 
 ## Run
 
