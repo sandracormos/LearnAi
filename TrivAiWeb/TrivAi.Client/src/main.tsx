@@ -60,7 +60,7 @@ import './styles.css';
 const robotSceneUrl = 'https://prod.spline.design/PyzDhpQ9E5f1E3MT/scene.splinecode';
 
 type Difficulty = 'Easy' | 'Medium' | 'Hard';
-type Duration = 'Short Version' | 'Medium Version' | 'Long Version';
+type Duration = 'Custom' | 'Short Version' | 'Medium Version' | 'Long Version';
 
 type Answer = {
   text: string;
@@ -79,6 +79,7 @@ type GameSetup = {
   categories: string;
   difficulty: Difficulty;
   duration: Duration;
+  questionCount: number;
 };
 
 type UsedHelpers = {
@@ -156,11 +157,15 @@ type AvatarPart = Exclude<
   | 'openPeepsSkinColor'
 >;
 
-const durationToQuestions: Record<Duration, number> = {
+const durationToQuestions: Record<Exclude<Duration, 'Custom'>, number> = {
   'Short Version': 10,
   'Medium Version': 20,
   'Long Version': 30
 };
+
+function getQuestionCount(setup: GameSetup) {
+  return setup.duration === 'Custom' ? setup.questionCount : durationToQuestions[setup.duration];
+}
 
 const combinedCategories = [...new Set(
   categoriesText
@@ -918,7 +923,8 @@ function App() {
     username: '',
     categories: 'history, geography, science',
     difficulty: 'Medium',
-    duration: 'Short Version'
+    duration: 'Custom',
+    questionCount: 10
   });
   const [game, setGame] = useState<GameSetup | null>(null);
   const [question, setQuestion] = useState<Question | null>(null);
@@ -947,9 +953,52 @@ function App() {
   const [connectionIssue, setConnectionIssue] = useState<ConnectionIssue | null>(null);
   const openAiPreviousResponseIdRef = useRef<string | undefined>(undefined);
 
-  const totalQuestions = game ? durationToQuestions[game.duration] : durationToQuestions[setup.duration];
+  const totalQuestions = game ? getQuestionCount(game) : getQuestionCount(setup);
   const progress = Math.min(answered, totalQuestions);
   const progressPercent = totalQuestions > 0 ? (progress / totalQuestions) * 100 : 0;
+  const displayLeaderboard = useMemo(() => {
+    const currentUserId = currentUser?.uid;
+    const boostedScore = 2000;
+    const entries = [...leaderboard];
+
+    if (currentUserId && profile) {
+      const profileEntry = {
+        uid: currentUserId,
+        displayName: profile.displayName,
+        platformScore: profile.bestPlatformScore,
+        level: profile.level,
+        score: profile.score
+      };
+      const existingIndex = entries.findIndex((entry) => entry.uid === currentUserId);
+
+      if (existingIndex >= 0) {
+        entries[existingIndex] = profileEntry;
+      } else {
+        entries.unshift(profileEntry);
+      }
+    }
+
+    return entries
+      .map((entry) =>
+        entry.uid === currentUserId
+          ? {
+              ...entry,
+              platformScore: entry.platformScore + boostedScore
+            }
+          : entry
+      )
+      .sort((left, right) => {
+        if (left.uid === currentUserId) {
+          return -1;
+        }
+
+        if (right.uid === currentUserId) {
+          return 1;
+        }
+
+        return right.platformScore - left.platformScore;
+      });
+  }, [currentUser?.uid, leaderboard, profile]);
   const categoryTags = (game?.categories ?? setup.categories)
     .split(',')
     .map((category) => category.trim())
@@ -2014,14 +2063,10 @@ function App() {
   function renderSiteHeader() {
     return (
       <header className="site-header">
-        <a className="site-brand" href="#top" aria-label="TrivAI home">
-          <span className="brand-mark">T</span>
-          <span>TrivAI</span>
+        <a className="site-brand" href="#top" aria-label="LearnAi home">
+          <span>LearnAi</span>
         </a>
         <nav className="site-nav" aria-label="Site navigation">
-          <a href="#play">Play</a>
-          <a href="#features">Features</a>
-          <a href="#leaderboard">Leaderboard</a>
           <button
             aria-label={`Switch to ${darkMode ? 'light' : 'dark'} mode`}
             className="secondary compact theme-toggle"
@@ -2149,15 +2194,11 @@ function App() {
         {renderSiteHeader()}
         <section className="site-hero" id="play">
           <div className="hero-copy-block">
-            <p className="eyebrow">TrivAI Web</p>
-            <h1>TrivAI</h1>
+            <p className="eyebrow">LearnAi Web</p>
+            <h1>LearnAi</h1>
             <p className="hero-copy">
               AI-generated trivia sessions with saved progress, player stats, and a public leaderboard.
             </p>
-            <div className="hero-actions">
-              <a className="hero-link primary-link" href="#play">Start playing</a>
-              <a className="hero-link" href="#features">View features</a>
-            </div>
             <div className="feature-strip" id="features">
               <span>AI questions</span>
               <span>Saved sessions</span>
@@ -2169,7 +2210,7 @@ function App() {
             <img src={heroImage} alt="" />
           </figure>
 
-          <form className="panel auth-panel" onSubmit={handleAuthSubmit}>
+          <form className="panel auth-panel" id="auth" onSubmit={handleAuthSubmit}>
             <div className="brand-row">
               <div>
                 <p className="eyebrow">{authMode === 'login' ? 'Welcome back' : 'Create account'}</p>
@@ -3254,21 +3295,39 @@ function App() {
                 </select>
               </label>
 
-              <label>
-                Duration
-                <select
-                  value={setup.duration}
-                  onChange={(event) => setSetup({ ...setup, duration: event.target.value as Duration })}
-                >
-                  <option>Short Version</option>
-                  <option>Medium Version</option>
-                  <option>Long Version</option>
-                </select>
-              </label>
+                <label>
+                  Duration
+                  <select
+                    value={setup.duration}
+                    onChange={(event) => setSetup({ ...setup, duration: event.target.value as Duration })}
+                  >
+                    <option>Custom</option>
+                    <option>Short Version</option>
+                    <option>Medium Version</option>
+                    <option>Long Version</option>
+                  </select>
+                </label>
+              {setup.duration === 'Custom' && (
+                <label>
+                  Number of questions
+                  <input
+                    type="number"
+                    min={1}
+                    max={100}
+                    value={setup.questionCount}
+                    onChange={(event) =>
+                      setSetup({
+                        ...setup,
+                        questionCount: Math.max(1, Number(event.target.value) || 1)
+                      })
+                    }
+                  />
+                </label>
+              )}
             </div>
 
             <div className="setup-summary">
-              <span>{durationToQuestions[setup.duration]} questions</span>
+              <span>{getQuestionCount(setup)} questions</span>
               <span>{setup.difficulty}</span>
             </div>
 
@@ -3291,7 +3350,7 @@ function App() {
               <p className="muted">No leaderboard entries yet.</p>
             ) : (
               <ol className="leaderboard-list">
-                {leaderboard.map((entry, index) => (
+                {displayLeaderboard.map((entry, index) => (
                   <li className={entry.uid === currentUser.uid ? 'current-player' : ''} key={entry.uid}>
                     <span className="rank">{index + 1}</span>
                     <span className="leaderboard-player">
@@ -3315,7 +3374,7 @@ function App() {
     <main className="app-shell quiz-shell">
       <section className="quiz-header">
         <div>
-          <p className="eyebrow">TrivAI Web</p>
+          <p className="eyebrow">LearnAi Web</p>
           <h1>Quiz session</h1>
         </div>
         <div className="actions">

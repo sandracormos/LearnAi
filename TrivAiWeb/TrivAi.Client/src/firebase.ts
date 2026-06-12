@@ -146,6 +146,41 @@ export type LeaderboardEntry = {
   score: number;
 };
 
+const demoLeaderboardNames = [
+  'Nova',
+  'Pixel',
+  'Astra',
+  'RoboFan',
+  'Quizzer',
+  'Orbit',
+  'Luna',
+  'Byte',
+  'Echo',
+  'Vector',
+  'Mira',
+  'Zen'
+];
+
+function createDemoLeaderboardEntries(count = 10): LeaderboardEntry[] {
+  const names = [...demoLeaderboardNames].sort(() => Math.random() - 0.5).slice(0, count);
+
+  return names
+    .map((displayName, index) => {
+      const platformScore = 900 + Math.floor(Math.random() * 900);
+      const level = Math.max(1, Math.min(20, Math.floor(platformScore / 120)));
+      const score = Math.max(0, platformScore - level * 100);
+
+      return {
+        uid: `demo-${index + 1}`,
+        displayName,
+        platformScore,
+        level,
+        score
+      };
+    })
+    .sort((left, right) => right.platformScore - left.platformScore);
+}
+
 export type CompletedSession = {
   categories: string;
   difficulty: string;
@@ -822,7 +857,7 @@ export async function getLeaderboard(): Promise<LeaderboardEntry[]> {
   const leaderboardQuery = query(collection(db, 'leaderboard'), orderBy('platformScore', 'desc'), limit(10));
   const snapshot = await getDocs(leaderboardQuery);
 
-  return snapshot.docs.map((entry) => {
+  const realEntries = snapshot.docs.map((entry) => {
     const data = entry.data();
     return {
       uid: String(data.uid ?? entry.id),
@@ -832,4 +867,15 @@ export async function getLeaderboard(): Promise<LeaderboardEntry[]> {
       score: Number(data.score ?? 0)
     };
   });
+
+  if (realEntries.length >= 10) {
+    return realEntries;
+  }
+
+  const usedNames = new Set(realEntries.map((entry) => entry.displayName));
+  const fillerEntries = createDemoLeaderboardEntries(10)
+    .filter((entry) => !usedNames.has(entry.displayName))
+    .slice(0, Math.max(0, 10 - realEntries.length));
+
+  return [...realEntries, ...fillerEntries].sort((left, right) => right.platformScore - left.platformScore);
 }
