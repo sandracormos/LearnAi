@@ -1,4 +1,4 @@
-# TrivAI Web
+# LearnAi
 
 Trivia web app built with React, ASP.NET Core, Firebase, and OpenAI.
 
@@ -34,20 +34,22 @@ Publish the rules from `firestore.rules` in Firebase Console.
 
 ## Graphics and Visual Systems
 
-The app includes a few graphics-focused systems that are useful to mention in a computer graphics presentation.
+The app includes a few graphics-focused pieces that are useful to mention in a computer graphics presentation:
 
-### Graphics sources and integration
-
-| Element | Where it comes from | How it is integrated |
-| --- | --- | --- |
-| `SVG icons` | Inline SVG markup in `src/main.tsx` and small icon buttons in `src/components/ui` | Rendered directly in JSX, then styled through `src/styles.css` so they can change size and color without extra image files. |
-| `Lottie animations` | JSON files in `LottieAnimations/` such as `Brain.json`, `Confetti.json`, `Loading.json`, and `Winner.json` | Wrapped with `lottie-react` components in `src/components/ui/*.tsx` and placed in the dashboard, quiz loading state, completion screen, and leaderboard highlight. |
-| `PNG previews` | Static preview images in `LottieAnimations/` such as `brain.png`, `Winner.png`, `Robot.png`, and `svgIcons.png` | Used in this README for documentation and presentation, not in the runtime UI. |
-| `Avatar system` | DiceBear avatars generated from the public DiceBear API plus local avatar item assets in `src/assets/avatar/` | Built in `src/main.tsx` by assembling the selected style, colors, and layered avatar parts. Local images are used for the custom avatar editor, while the final profile avatar is rendered from the generated SVG URL. |
-| `Interactive robot` | A remote Spline scene URL from `https://prod.spline.design/.../scene.splinecode` | Loaded through `InteractiveRobotSpline` in `src/components/ui/interactive-3d-robot.tsx` and shown on the signed-in menu hero. |
-| `Theme switch` | Custom SVG sun and moon icons embedded in the settings UI | The app swaps light and dark visuals by changing the theme state, storing the preference in `localStorage`, and letting CSS variables in `src/styles.css` restyle the interface. |
-| `Daily reward calendar` | Lock icon SVG and calendar-style layout created in the client | Rendered as a visual reward panel with claimed, current, and locked states so the streak is visible at a glance. |
-| `XP, progress, and leaderboard feedback` | CSS shapes, highlighted rows, bars, counters, and the winner Lottie animation | These are driven by React state and updated after quiz actions so score, level, and rank changes are visible immediately. |
+- `SVG icons` for navigation, settings, and status indicators.
+  These are vector-based, so they stay sharp at any size and are easy to recolor through CSS.
+- `Lottie animations` for loading, confetti, winner feedback, and dashboard visuals.
+  They are JSON animations rendered in the browser, which makes them lighter and easier to reuse than video files.
+- `Static PNG previews` for the same animation set.
+  These are useful in documentation and presentation material when you want a quick visual reference without playing the animation.
+- `Avatar composition` built from layered parts such as face, hair, accessories, clothing, and background.
+  The avatar is assembled from separate visual layers, which makes it customizable without needing a new image for every variation.
+- `Theme switching` that updates the same interface between light and dark visual modes.
+  The app keeps one layout and swaps the visual palette through state-driven styling, which is a clean way to support multiple presentation modes.
+- `Daily reward calendar` that uses visual states like claimed, today, and locked.
+  This turns progress into a visible interface element instead of a hidden value.
+- `XP and progress UI` that turns score and streaks into visible game feedback.
+  The interface uses bars, counters, and highlighted states to make advancement feel immediate and understandable.
 
 ### Animation previews
 
@@ -76,3 +78,4 @@ npm run dev -- --port 5173
 ```
 
 Open `http://127.0.0.1:5173`.
+****
