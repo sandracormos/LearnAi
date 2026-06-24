@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1450" height="620" viewBox="0 0 1450 620">
+  <defs>
+    <style>
+      .title { font: 700 38px Arial, sans-serif; fill: #172033; }
+      .name { font: 700 23px Arial, sans-serif; fill: #172033; }
+      .small { font: 20px Arial, sans-serif; fill: #344054; }
+      .box { stroke: #344054; stroke-width: 3; rx: 20; }
+      .arrow { stroke: #344054; stroke-width: 4; fill: none; marker-end: url(#arrow); }
+    </style>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0,0 L12,6 L0,12 z" fill="#344054"/>
+    </marker>
+  </defs>
+
+  <rect width="1450" height="620" fill="#f8fafc"/>
+  <text x="725" y="62" text-anchor="middle" class="title">Publicarea unui test personalizat</text>
+
+  <rect x="55" y="205" width="220" height="120" class="box" fill="#dbeafe"/>
+  <text x="165" y="275" text-anchor="middle" class="name">Editor</text>
+
+  <rect x="365" y="205" width="250" height="120" class="box" fill="#ffffff"/>
+  <text x="490" y="275" text-anchor="middle" class="name">Draft privat</text>
+
+  <rect x="705" y="205" width="240" height="120" class="box" fill="#fef3c7"/>
+  <text x="825" y="275" text-anchor="middle" class="name">Publicare</text>
+
+  <rect x="1035" y="185" width="340" height="160" class="box" fill="#dcfce7"/>
+  <text x="1205" y="255" text-anchor="middle" class="name">Test public</text>
+  <text x="1205" y="295" text-anchor="middle" class="small">fără correctAnswer</text>
+
+  <rect x="680" y="440" width="290" height="120" class="box" fill="#ede9fe"/>
+  <text x="825" y="510" text-anchor="middle" class="name">answerKey protejat</text>
+
+  <path d="M275 265 H365" class="arrow"/>
+  <path d="M615 265 H705" class="arrow"/>
+  <path d="M945 265 H1035" class="arrow"/>
+  <path d="M825 325 V440" class="arrow"/>
+</svg>

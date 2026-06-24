@@ -958,7 +958,6 @@ function App() {
   const progressPercent = totalQuestions > 0 ? (progress / totalQuestions) * 100 : 0;
   const displayLeaderboard = useMemo(() => {
     const currentUserId = currentUser?.uid;
-    const boostedScore = 2000;
     const entries = [...leaderboard];
 
     if (currentUserId && profile) {
@@ -974,30 +973,26 @@ function App() {
       if (existingIndex >= 0) {
         entries[existingIndex] = profileEntry;
       } else {
-        entries.unshift(profileEntry);
+        entries.push(profileEntry);
       }
     }
 
-    return entries
-      .map((entry) =>
-        entry.uid === currentUserId
-          ? {
-              ...entry,
-              platformScore: entry.platformScore + boostedScore
-            }
-          : entry
-      )
-      .sort((left, right) => {
-        if (left.uid === currentUserId) {
-          return -1;
-        }
-
-        if (right.uid === currentUserId) {
-          return 1;
-        }
-
+    return entries.sort((left, right) => {
+      if (right.platformScore !== left.platformScore) {
         return right.platformScore - left.platformScore;
-      });
+      }
+
+      if (right.level !== left.level) {
+        return right.level - left.level;
+      }
+
+      if (right.score !== left.score) {
+        return right.score - left.score;
+      }
+
+      const nameOrder = left.displayName.localeCompare(right.displayName);
+      return nameOrder !== 0 ? nameOrder : left.uid.localeCompare(right.uid);
+    });
   }, [currentUser?.uid, leaderboard, profile]);
   const categoryTags = (game?.categories ?? setup.categories)
     .split(',')

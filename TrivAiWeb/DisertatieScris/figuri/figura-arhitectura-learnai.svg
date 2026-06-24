@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <defs>
+    <style>
+      .title { font: 700 38px 'Arial', sans-serif; fill: #172033; }
+      .label { font: 700 25px 'Arial', sans-serif; fill: #172033; }
+      .text { font: 21px 'Arial', sans-serif; fill: #344054; }
+      .small { font: 18px 'Arial', sans-serif; fill: #475467; }
+      .box { stroke: #344054; stroke-width: 3; rx: 24; }
+      .arrow { stroke: #475467; stroke-width: 4; fill: none; marker-end: url(#arrow); }
+    </style>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0,0 L12,6 L0,12 z" fill="#475467"/>
+    </marker>
+  </defs>
+  <rect width="1600" height="900" fill="#f8fafc"/>
+  <text x="800" y="72" text-anchor="middle" class="title">Arhitectura generală a aplicației LearnAI</text>
+
+  <rect x="80" y="250" width="330" height="270" class="box" fill="#e0f2fe"/>
+  <text x="245" y="305" text-anchor="middle" class="label">Client web</text>
+  <text x="245" y="350" text-anchor="middle" class="text">React + TypeScript</text>
+  <text x="245" y="388" text-anchor="middle" class="small">interfață și stare locală</text>
+  <text x="245" y="424" text-anchor="middle" class="small">configurare și rulare quiz</text>
+  <text x="245" y="460" text-anchor="middle" class="small">dashboard și gamificare</text>
+
+  <rect x="635" y="250" width="330" height="270" class="box" fill="#ede9fe"/>
+  <text x="800" y="305" text-anchor="middle" class="label">API LearnAI</text>
+  <text x="800" y="350" text-anchor="middle" class="text">ASP.NET Core</text>
+  <text x="800" y="388" text-anchor="middle" class="small">endpoint-uri HTTP</text>
+  <text x="800" y="424" text-anchor="middle" class="small">validarea răspunsurilor AI</text>
+  <text x="800" y="460" text-anchor="middle" class="small">autorizare și protecția cheilor</text>
+
+  <rect x="1190" y="135" width="330" height="230" class="box" fill="#dcfce7"/>
+  <text x="1355" y="195" text-anchor="middle" class="label">OpenAI API</text>
+  <text x="1355" y="240" text-anchor="middle" class="text">generarea întrebărilor</text>
+  <text x="1355" y="278" text-anchor="middle" class="small">ieșire JSON structurată</text>
+  <text x="1355" y="314" text-anchor="middle" class="small">context între întrebări</text>
+
+  <rect x="1190" y="505" width="330" height="260" class="box" fill="#fef3c7"/>
+  <text x="1355" y="565" text-anchor="middle" class="label">Firebase</text>
+  <text x="1355" y="610" text-anchor="middle" class="text">Authentication</text>
+  <text x="1355" y="650" text-anchor="middle" class="text">Cloud Firestore</text>
+  <text x="1355" y="692" text-anchor="middle" class="small">profil, progres, sesiuni,</text>
+  <text x="1355" y="726" text-anchor="middle" class="small">clasament și teste</text>
+
+  <path d="M410 345 H635" class="arrow"/>
+  <text x="522" y="326" text-anchor="middle" class="small">HTTPS / JSON</text>
+  <path d="M965 330 C1060 330 1085 250 1190 250" class="arrow"/>
+  <text x="1080" y="252" text-anchor="middle" class="small">Responses API</text>
+  <path d="M965 445 C1060 445 1085 630 1190 630" class="arrow"/>
+  <text x="1075" y="580" text-anchor="middle" class="small">REST + token Firebase</text>
+  <path d="M410 475 C710 710 960 760 1190 690" class="arrow"/>
+  <text x="770" y="737" text-anchor="middle" class="small">autentificare și date ale profilului</text>
+
+  <text x="800" y="846" text-anchor="middle" class="small">Cheile și validarea critică rămân în backend; browserul nu comunică direct cu OpenAI.</text>
+</svg>

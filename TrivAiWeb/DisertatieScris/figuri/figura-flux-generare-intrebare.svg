@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <defs>
+    <style>
+      .title { font: 700 38px 'Arial', sans-serif; fill: #172033; }
+      .label { font: 700 22px 'Arial', sans-serif; fill: #172033; }
+      .text { font: 18px 'Arial', sans-serif; fill: #475467; }
+      .step { stroke: #344054; stroke-width: 3; rx: 20; }
+      .arrow { stroke: #475467; stroke-width: 4; fill: none; marker-end: url(#arrow); }
+    </style>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0,0 L12,6 L0,12 z" fill="#475467"/>
+    </marker>
+  </defs>
+  <rect width="1600" height="900" fill="#f8fafc"/>
+  <text x="800" y="72" text-anchor="middle" class="title">Fluxul generării și validării unei întrebări</text>
+
+  <g transform="translate(80,210)">
+    <rect width="240" height="180" class="step" fill="#e0f2fe"/>
+    <text x="120" y="58" text-anchor="middle" class="label">1. Configurare</text>
+    <text x="120" y="100" text-anchor="middle" class="text">categorie</text>
+    <text x="120" y="130" text-anchor="middle" class="text">dificultate</text>
+    <text x="120" y="160" text-anchor="middle" class="text">întrebări anterioare</text>
+  </g>
+  <path d="M320 300 H410" class="arrow"/>
+
+  <g transform="translate(410,210)">
+    <rect width="240" height="180" class="step" fill="#ede9fe"/>
+    <text x="120" y="58" text-anchor="middle" class="label">2. Cerere API</text>
+    <text x="120" y="100" text-anchor="middle" class="text">prompt controlat</text>
+    <text x="120" y="130" text-anchor="middle" class="text">schemă JSON strictă</text>
+    <text x="120" y="160" text-anchor="middle" class="text">cheie protejată</text>
+  </g>
+  <path d="M650 300 H740" class="arrow"/>
+
+  <g transform="translate(740,210)">
+    <rect width="240" height="180" class="step" fill="#dcfce7"/>
+    <text x="120" y="58" text-anchor="middle" class="label">3. Generare AI</text>
+    <text x="120" y="100" text-anchor="middle" class="text">întrebare</text>
+    <text x="120" y="130" text-anchor="middle" class="text">4 variante</text>
+    <text x="120" y="160" text-anchor="middle" class="text">indiciu</text>
+  </g>
+  <path d="M980 300 H1070" class="arrow"/>
+
+  <g transform="translate(1070,210)">
+    <rect width="240" height="180" class="step" fill="#fef3c7"/>
+    <text x="120" y="58" text-anchor="middle" class="label">4. Validare</text>
+    <text x="120" y="100" text-anchor="middle" class="text">text nenul</text>
+    <text x="120" y="130" text-anchor="middle" class="text">exact 4 răspunsuri</text>
+    <text x="120" y="160" text-anchor="middle" class="text">un singur răspuns corect</text>
+  </g>
+  <path d="M1310 300 H1400" class="arrow"/>
+
+  <g transform="translate(1400,230)">
+    <rect width="140" height="140" class="step" fill="#fee2e2"/>
+    <text x="70" y="55" text-anchor="middle" class="label">5. Afișare</text>
+    <text x="70" y="92" text-anchor="middle" class="text">sau</text>
+    <text x="70" y="120" text-anchor="middle" class="text">eroare controlată</text>
+  </g>
+
+  <path d="M1190 390 V570 H530 V390" class="arrow"/>
+  <text x="860" y="548" text-anchor="middle" class="text">răspuns invalid → eroare tratată; datele nu sunt afișate ca întrebare validă</text>
+  <path d="M1470 370 V690 H200 V390" class="arrow"/>
+  <text x="835" y="672" text-anchor="middle" class="text">după răspuns, întrebarea este adăugată în istoric pentru reducerea repetării</text>
+</svg>

@@ -1,0 +1,136 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1100" viewBox="0 0 1800 1100">
+  <defs>
+    <style>
+      .title { font: 700 42px Arial, sans-serif; fill: #172033; }
+      .subtitle { font: 20px Arial, sans-serif; fill: #667085; }
+      .group-title { font: 700 27px Arial, sans-serif; fill: #172033; }
+      .box-title { font: 700 22px Arial, sans-serif; fill: #172033; }
+      .text { font: 18px Arial, sans-serif; fill: #344054; }
+      .small { font: 16px Arial, sans-serif; fill: #475467; }
+      .group { stroke-width: 3; rx: 28; }
+      .box { stroke: #667085; stroke-width: 2; rx: 16; }
+      .arrow { stroke: #344054; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+      .arrow-dashed { stroke: #667085; stroke-width: 3; stroke-dasharray: 10 8; fill: none; marker-end: url(#arrowGray); }
+      .flow { font: 700 16px Arial, sans-serif; fill: #344054; }
+      .badge { font: 700 15px Arial, sans-serif; fill: #ffffff; }
+    </style>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0,0 L12,6 L0,12 z" fill="#344054"/>
+    </marker>
+    <marker id="arrowGray" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0,0 L12,6 L0,12 z" fill="#667085"/>
+    </marker>
+  </defs>
+
+  <rect width="1800" height="1100" fill="#f8fafc"/>
+  <text x="900" y="60" text-anchor="middle" class="title">Structura tehnică a aplicației LearnAI</text>
+  <text x="900" y="94" text-anchor="middle" class="subtitle">Componente, servicii externe și fluxuri de comunicare</text>
+
+  <!-- CLIENT -->
+  <rect x="55" y="155" width="455" height="760" class="group" fill="#eff8ff" stroke="#2e90fa"/>
+  <text x="282" y="205" text-anchor="middle" class="group-title">Browserul utilizatorului</text>
+  <rect x="85" y="235" width="395" height="135" class="box" fill="#d1e9ff"/>
+  <text x="282" y="275" text-anchor="middle" class="box-title">React + TypeScript</text>
+  <text x="282" y="307" text-anchor="middle" class="text">interfață, navigare și stare</text>
+  <text x="282" y="337" text-anchor="middle" class="small">build și dezvoltare: Vite</text>
+
+  <rect x="85" y="395" width="395" height="180" class="box" fill="#ffffff"/>
+  <text x="282" y="435" text-anchor="middle" class="box-title">Module funcționale</text>
+  <text x="115" y="473" class="text">• configurare și rulare quiz</text>
+  <text x="115" y="505" class="text">• dashboard, XP, nivel și streak</text>
+  <text x="115" y="537" class="text">• clasament și avatar</text>
+  <text x="115" y="569" class="text">• editor de teste personalizate</text>
+
+  <rect x="85" y="600" width="395" height="135" class="box" fill="#ffffff"/>
+  <text x="282" y="640" text-anchor="middle" class="box-title">Firebase Web SDK</text>
+  <text x="282" y="674" text-anchor="middle" class="text">sesiunea utilizatorului</text>
+  <text x="282" y="705" text-anchor="middle" class="small">profil, progres și clasament</text>
+
+  <rect x="85" y="760" width="395" height="120" class="box" fill="#ffffff"/>
+  <text x="282" y="800" text-anchor="middle" class="box-title">Elemente vizuale</text>
+  <text x="282" y="834" text-anchor="middle" class="text">CSS, SVG, Lottie, DiceBear</text>
+  <text x="282" y="862" text-anchor="middle" class="small">animații și avataruri configurabile</text>
+
+  <!-- BACKEND -->
+  <rect x="650" y="155" width="530" height="760" class="group" fill="#f4f3ff" stroke="#7f56d9"/>
+  <text x="915" y="205" text-anchor="middle" class="group-title">Backend LearnAI</text>
+  <rect x="680" y="235" width="470" height="120" class="box" fill="#e9d7fe"/>
+  <text x="915" y="275" text-anchor="middle" class="box-title">ASP.NET Core 9 Minimal API</text>
+  <text x="915" y="309" text-anchor="middle" class="text">rutare HTTP, CORS și Dependency Injection</text>
+  <text x="915" y="337" text-anchor="middle" class="small">configurația și cheile rămân pe server</text>
+
+  <rect x="680" y="380" width="220" height="180" class="box" fill="#ffffff"/>
+  <text x="790" y="420" text-anchor="middle" class="box-title">Trivia API</text>
+  <text x="790" y="454" text-anchor="middle" class="small">POST</text>
+  <text x="790" y="480" text-anchor="middle" class="small">/api/trivia/question</text>
+  <text x="790" y="516" text-anchor="middle" class="text">OpenAiTriviaService</text>
+  <text x="790" y="544" text-anchor="middle" class="small">parser + validator</text>
+
+  <rect x="930" y="380" width="220" height="180" class="box" fill="#ffffff"/>
+  <text x="1040" y="420" text-anchor="middle" class="box-title">Custom Tests API</text>
+  <text x="1040" y="454" text-anchor="middle" class="small">GET / POST / DELETE</text>
+  <text x="1040" y="480" text-anchor="middle" class="small">/api/custom-tests</text>
+  <text x="1040" y="516" text-anchor="middle" class="text">Firestore service</text>
+  <text x="1040" y="544" text-anchor="middle" class="small">token Firebase obligatoriu</text>
+
+  <rect x="680" y="585" width="470" height="145" class="box" fill="#ffffff"/>
+  <text x="915" y="625" text-anchor="middle" class="box-title">Controlul conținutului generat</text>
+  <text x="710" y="663" class="text">• schemă JSON strictă</text>
+  <text x="710" y="695" class="text">• exact 4 variante și un răspuns corect</text>
+  <text x="710" y="727" class="small">• istoric pentru reducerea repetării</text>
+
+  <rect x="680" y="755" width="470" height="125" class="box" fill="#ffffff"/>
+  <text x="915" y="795" text-anchor="middle" class="box-title">Securitate</text>
+  <text x="710" y="831" class="text">• ASP.NET Core Data Protection</text>
+  <text x="710" y="861" class="small">• cheia răspunsurilor nu este trimisă browserului</text>
+
+  <!-- EXTERNAL SERVICES -->
+  <rect x="1320" y="155" width="425" height="360" class="group" fill="#ecfdf3" stroke="#12b76a"/>
+  <text x="1532" y="205" text-anchor="middle" class="group-title">OpenAI</text>
+  <rect x="1350" y="235" width="365" height="235" class="box" fill="#ffffff"/>
+  <text x="1532" y="278" text-anchor="middle" class="box-title">Responses API</text>
+  <text x="1532" y="316" text-anchor="middle" class="text">model: gpt-4o-mini</text>
+  <text x="1532" y="352" text-anchor="middle" class="text">generare întrebare + indiciu</text>
+  <text x="1532" y="388" text-anchor="middle" class="text">Structured Outputs / JSON Schema</text>
+  <text x="1532" y="428" text-anchor="middle" class="small">previous_response_id păstrează</text>
+  <text x="1532" y="454" text-anchor="middle" class="small">contextul sesiunii</text>
+
+  <rect x="1320" y="555" width="425" height="360" class="group" fill="#fffaeb" stroke="#f79009"/>
+  <text x="1532" y="605" text-anchor="middle" class="group-title">Firebase</text>
+  <rect x="1350" y="635" width="365" height="105" class="box" fill="#ffffff"/>
+  <text x="1532" y="675" text-anchor="middle" class="box-title">Authentication</text>
+  <text x="1532" y="708" text-anchor="middle" class="text">e-mail/parolă + ID token</text>
+  <rect x="1350" y="765" width="365" height="115" class="box" fill="#ffffff"/>
+  <text x="1532" y="805" text-anchor="middle" class="box-title">Cloud Firestore</text>
+  <text x="1532" y="838" text-anchor="middle" class="small">users • leaderboard</text>
+  <text x="1532" y="865" text-anchor="middle" class="small">customTests • publishedTests</text>
+
+  <!-- FLOWS -->
+  <path d="M510 315 H650" class="arrow"/>
+  <rect x="535" y="276" width="92" height="25" rx="12" fill="#344054"/>
+  <text x="581" y="294" text-anchor="middle" class="badge">HTTPS/JSON</text>
+  <text x="580" y="346" text-anchor="middle" class="flow">quiz și teste</text>
+
+  <path d="M1180 440 C1245 440 1250 340 1320 340" class="arrow"/>
+  <text x="1245" y="365" text-anchor="middle" class="flow">3. generare</text>
+
+  <path d="M1180 500 C1255 500 1240 825 1320 825" class="arrow"/>
+  <text x="1240" y="695" text-anchor="middle" class="flow">5. teste publicate</text>
+
+  <path d="M510 670 C850 990 1160 1010 1320 855" class="arrow-dashed"/>
+  <text x="900" y="1018" text-anchor="middle" class="flow">2. profil, progres și clasament prin Firebase Web SDK</text>
+
+  <path d="M510 625 C850 105 1195 120 1320 675" class="arrow-dashed"/>
+  <text x="900" y="128" text-anchor="middle" class="flow">1. autentificare și obținerea tokenului Firebase</text>
+
+  <path d="M1320 710 C1225 710 1220 610 1150 520" class="arrow"/>
+  <text x="1230" y="612" text-anchor="middle" class="flow">4. ID token</text>
+
+  <!-- LEGEND -->
+  <rect x="55" y="960" width="1690" height="90" rx="20" fill="#ffffff" stroke="#d0d5dd" stroke-width="2"/>
+  <line x1="105" y1="1005" x2="190" y2="1005" class="arrow"/>
+  <text x="210" y="1011" class="small">apel realizat prin backend</text>
+  <line x1="505" y1="1005" x2="590" y2="1005" class="arrow-dashed"/>
+  <text x="610" y="1011" class="small">comunicare directă permisă clientului Firebase</text>
+  <text x="1005" y="1011" class="small">Limita de securitate: cheia OpenAI și cheia răspunsurilor publicate rămân în backend.</text>
+</svg>

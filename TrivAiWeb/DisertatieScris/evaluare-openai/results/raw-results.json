@@ -1,0 +1,1585 @@
+﻿{
+    "methodology":  {
+                        "categories":  [
+                                           "History",
+                                           "Geography",
+                                           "Science",
+                                           "Technology",
+                                           "General Knowledge"
+                                       ],
+                        "difficultyDistributionPerCategory":  {
+                                                                  "Easy":  4,
+                                                                  "Medium":  3,
+                                                                  "Hard":  3
+                                                              },
+                        "sessionDesign":  "Five independent response chains, one per category; ten questions per chain.",
+                        "latencyMeasurement":  "Client-side elapsed time for each HTTP POST to the LearnAI backend.",
+                        "structuralCriteria":  "Non-empty question and hint, exactly four non-empty answers, exactly one answer marked correct."
+                    },
+    "summary":  {
+                    "generatedAt":  "2026-06-25T00:24:51.8713716+03:00",
+                    "endpoint":  "http://127.0.0.1:5238/api/trivia/question",
+                    "model":  "gpt-4o-mini",
+                    "plannedQuestions":  50,
+                    "successfulRequests":  50,
+                    "failedRequests":  0,
+                    "structurallyValidResponses":  50,
+                    "structuralCompliancePercent":  100,
+                    "averageLatencySeconds":  2.154,
+                    "medianLatencySeconds":  2.018,
+                    "p95LatencySeconds":  2.844,
+                    "factualReviewStatus":  "Pending manual verification with cited sources"
+                },
+    "results":  [
+                    {
+                        "questionNumber":  1,
+                        "category":  "History",
+                        "difficulty":  "Easy",
+                        "latencySeconds":  2.712,
+                        "requestSucceeded":  true,
+                        "structureValid":  true,
+                        "question":  "Who was the first President of the United States?",
+                        "hint":  "He is often referred to as the \u0027Father of His Country.\u0027",
+                        "answers":  [
+                                        {
+                                            "text":  "Abraham Lincoln",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "George Washington",
+                                            "isCorrect":  true
+                                        },
+                                        {
+                                            "text":  "Thomas Jefferson",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "John Adams",
+                                            "isCorrect":  false
+                                        }
+                                    ],
+                        "correctAnswer":  "George Washington",
+                        "openAiResponseId":  "resp_0740a47bc6210f17006a3c4ab9d04c819ca33e63cd756bef99",
+                        "error":  null
+                    },
+                    {
+                        "questionNumber":  2,
+                        "category":  "History",
+                        "difficulty":  "Easy",
+                        "latencySeconds":  1.968,
+                        "requestSucceeded":  true,
+                        "structureValid":  true,
+                        "question":  "Which ancient civilization built the pyramids?",
+                        "hint":  "This civilization is known for its pharaohs and hieroglyphics.",
+                        "answers":  [
+                                        {
+                                            "text":  "Mesopotamian",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "Egyptian",
+                                            "isCorrect":  true
+                                        },
+                                        {
+                                            "text":  "Indus Valley",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "Mayan",
+                                            "isCorrect":  false
+                                        }
+                                    ],
+                        "correctAnswer":  "Egyptian",
+                        "openAiResponseId":  "resp_0740a47bc6210f17006a3c4abc2318819cb7b7f44402eec082",
+                        "error":  null
+                    },
+                    {
+                        "questionNumber":  3,
+                        "category":  "History",
+                        "difficulty":  "Easy",
+                        "latencySeconds":  1.896,
+                        "requestSucceeded":  true,
+                        "structureValid":  true,
+                        "question":  "What year did the Titanic sink?",
+                        "hint":  "This disaster occurred during the early 20th century, famously on its maiden voyage.",
+                        "answers":  [
+                                        {
+                                            "text":  "1910",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "1912",
+                                            "isCorrect":  true
+                                        },
+                                        {
+                                            "text":  "1905",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "1915",
+                                            "isCorrect":  false
+                                        }
+                                    ],
+                        "correctAnswer":  "1912",
+                        "openAiResponseId":  "resp_0740a47bc6210f17006a3c4abe1890819c8a8c78e0072b2002",
+                        "error":  null
+                    },
+                    {
+                        "questionNumber":  4,
+                        "category":  "History",
+                        "difficulty":  "Easy",
+                        "latencySeconds":  2.542,
+                        "requestSucceeded":  true,
+                        "structureValid":  true,
+                        "question":  "Who was the famous civil rights leader known for his \u0027I Have a Dream\u0027 speech?",
+                        "hint":  "He played a significant role in the American civil rights movement during the 1960s.",
+                        "answers":  [
+                                        {
+                                            "text":  "Malcolm X",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "Nelson Mandela",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "Martin Luther King Jr.",
+                                            "isCorrect":  true
+                                        },
+                                        {
+                                            "text":  "Rosa Parks",
+                                            "isCorrect":  false
+                                        }
+                                    ],
+                        "correctAnswer":  "Martin Luther King Jr.",
+                        "openAiResponseId":  "resp_0740a47bc6210f17006a3c4abffa34819cafce650322978ad5",
+                        "error":  null
+                    },
+                    {
+                        "questionNumber":  5,
+                        "category":  "History",
+                        "difficulty":  "Medium",
+                        "latencySeconds":  2.096,
+                        "requestSucceeded":  true,
+                        "structureValid":  true,
+                        "question":  "Which war was fought between the North and South regions in the United States?",
+                        "hint":  "This conflict is often referred to as the \u0027Civil War.\u0027",
+                        "answers":  [
+                                        {
+                                            "text":  "World War I",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "The American Revolution",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "The Civil War",
+                                            "isCorrect":  true
+                                        },
+                                        {
+                                            "text":  "World War II",
+                                            "isCorrect":  false
+                                        }
+                                    ],
+                        "correctAnswer":  "The Civil War",
+                        "openAiResponseId":  "resp_0740a47bc6210f17006a3c4ac28564819c9e38ab0de25112ff",
+                        "error":  null
+                    },
+                    {
+                        "questionNumber":  6,
+                        "category":  "History",
+                        "difficulty":  "Medium",
+                        "latencySeconds":  1.987,
+                        "requestSucceeded":  true,
+                        "structureValid":  true,
+                        "question":  "What year did World War II begin?",
+                        "hint":  "This conflict started shortly before the United States entered the war after the attack on Pearl Harbor.",
+                        "answers":  [
+                                        {
+                                            "text":  "1935",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "1941",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "1939",
+                                            "isCorrect":  true
+                                        },
+                                        {
+                                            "text":  "1945",
+                                            "isCorrect":  false
+                                        }
+                                    ],
+                        "correctAnswer":  "1939",
+                        "openAiResponseId":  "resp_0740a47bc6210f17006a3c4ac49e90819ca0f396c8c1508122",
+                        "error":  null
+                    },
+                    {
+                        "questionNumber":  7,
+                        "category":  "History",
+                        "difficulty":  "Medium",
+                        "latencySeconds":  2.331,
+                        "requestSucceeded":  true,
+                        "structureValid":  true,
+                        "question":  "Who was the British Prime Minister at the start of World War II?",
+                        "hint":  "He is known for his speeches and leadership during the war, especially his defiance against Nazi Germany.",
+                        "answers":  [
+                                        {
+                                            "text":  "Winston Churchill",
+                                            "isCorrect":  true
+                                        },
+                                        {
+                                            "text":  "Neville Chamberlain",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "Clement Attlee",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "Margaret Thatcher",
+                                            "isCorrect":  false
+                                        }
+                                    ],
+                        "correctAnswer":  "Winston Churchill",
+                        "openAiResponseId":  "resp_0740a47bc6210f17006a3c4ac6995c819cb4151751e02f17ce",
+                        "error":  null
+                    },
+                    {
+                        "questionNumber":  8,
+                        "category":  "History",
+                        "difficulty":  "Hard",
+                        "latencySeconds":  3.322,
+                        "requestSucceeded":  true,
+                        "structureValid":  true,
+                        "question":  "Which treaty ended World War I?",
+                        "hint":  "This treaty is known for its harsh reparations imposed on Germany and was signed in France in 1919.",
+                        "answers":  [
+                                        {
+                                            "text":  "Treaty of Versailles",
+                                            "isCorrect":  true
+                                        },
+                                        {
+                                            "text":  "Treaty of Paris",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "Treaty of Trianon",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "Treaty of Saint-Germain",
+                                            "isCorrect":  false
+                                        }
+                                    ],
+                        "correctAnswer":  "Treaty of Versailles",
+                        "openAiResponseId":  "resp_0740a47bc6210f17006a3c4ac8f1bc819caf6d5be8e31bdcc1",
+                        "error":  null
+                    },
+                    {
+                        "questionNumber":  9,
+                        "category":  "History",
+                        "difficulty":  "Hard",
+                        "latencySeconds":  2.298,
+                        "requestSucceeded":  true,
+                        "structureValid":  true,
+                        "question":  "What was the primary cause of the Thirty Years\u0027 War in Europe?",
+                        "hint":  "This conflict was largely fueled by religious tensions and political power struggles between Protestant and Catholic states.",
+                        "answers":  [
+                                        {
+                                            "text":  "Territorial disputes",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "Economic rivalry",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "Religious conflict",
+                                            "isCorrect":  true
+                                        },
+                                        {
+                                            "text":  "Dynastic claims",
+                                            "isCorrect":  false
+                                        }
+                                    ],
+                        "correctAnswer":  "Religious conflict",
+                        "openAiResponseId":  "resp_0740a47bc6210f17006a3c4acc452c819c9dc15bda5fa93061",
+                        "error":  null
+                    },
+                    {
+                        "questionNumber":  10,
+                        "category":  "History",
+                        "difficulty":  "Hard",
+                        "latencySeconds":  2.476,
+                        "requestSucceeded":  true,
+                        "structureValid":  true,
+                        "question":  "Which empire was known for its use of the falcon as a symbol of power and the concept of Ma\u0027at?",
+                        "hint":  "This ancient civilization thrived along the Nile River and is famous for its pyramids and pharaohs.",
+                        "answers":  [
+                                        {
+                                            "text":  "Roman Empire",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "Persian Empire",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "Egyptian Empire",
+                                            "isCorrect":  true
+                                        },
+                                        {
+                                            "text":  "Mongol Empire",
+                                            "isCorrect":  false
+                                        }
+                                    ],
+                        "correctAnswer":  "Egyptian Empire",
+                        "openAiResponseId":  "resp_0740a47bc6210f17006a3c4ace939c819ca318908ee36ba038",
+                        "error":  null
+                    },
+                    {
+                        "questionNumber":  11,
+                        "category":  "Geography",
+                        "difficulty":  "Easy",
+                        "latencySeconds":  1.633,
+                        "requestSucceeded":  true,
+                        "structureValid":  true,
+                        "question":  "What is the largest continent on Earth?",
+                        "hint":  "Think about the continent with the most land area.",
+                        "answers":  [
+                                        {
+                                            "text":  "Africa",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "Asia",
+                                            "isCorrect":  true
+                                        },
+                                        {
+                                            "text":  "Europe",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "Australia",
+                                            "isCorrect":  false
+                                        }
+                                    ],
+                        "correctAnswer":  "Asia",
+                        "openAiResponseId":  "resp_08884a85fa550f7d006a3c4ad1089081a0be001dc5804d0764",
+                        "error":  null
+                    },
+                    {
+                        "questionNumber":  12,
+                        "category":  "Geography",
+                        "difficulty":  "Easy",
+                        "latencySeconds":  1.896,
+                        "requestSucceeded":  true,
+                        "structureValid":  true,
+                        "question":  "Which river is the longest in the world?",
+                        "hint":  "Consider the major river that flows through northeastern Africa.",
+                        "answers":  [
+                                        {
+                                            "text":  "Amazon River",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "Nile River",
+                                            "isCorrect":  true
+                                        },
+                                        {
+                                            "text":  "Yangtze River",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "Mississippi River",
+                                            "isCorrect":  false
+                                        }
+                                    ],
+                        "correctAnswer":  "Nile River",
+                        "openAiResponseId":  "resp_08884a85fa550f7d006a3c4ad2adc881a0a9eec11eeefd9ec0",
+                        "error":  null
+                    },
+                    {
+                        "questionNumber":  13,
+                        "category":  "Geography",
+                        "difficulty":  "Easy",
+                        "latencySeconds":  1.883,
+                        "requestSucceeded":  true,
+                        "structureValid":  true,
+                        "question":  "Which country is known as the Land of the Rising Sun?",
+                        "hint":  "Think of the Asian country famous for its unique culture and technology.",
+                        "answers":  [
+                                        {
+                                            "text":  "China",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "Japan",
+                                            "isCorrect":  true
+                                        },
+                                        {
+                                            "text":  "Thailand",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "South Korea",
+                                            "isCorrect":  false
+                                        }
+                                    ],
+                        "correctAnswer":  "Japan",
+                        "openAiResponseId":  "resp_08884a85fa550f7d006a3c4ad491ec81a0a28326365b7eb1f3",
+                        "error":  null
+                    },
+                    {
+                        "questionNumber":  14,
+                        "category":  "Geography",
+                        "difficulty":  "Easy",
+                        "latencySeconds":  2.277,
+                        "requestSucceeded":  true,
+                        "structureValid":  true,
+                        "question":  "What is the capital city of France?",
+                        "hint":  "This city is famous for the Eiffel Tower and is known as the City of Lights.",
+                        "answers":  [
+                                        {
+                                            "text":  "Rome",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "Berlin",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "Paris",
+                                            "isCorrect":  true
+                                        },
+                                        {
+                                            "text":  "Madrid",
+                                            "isCorrect":  false
+                                        }
+                                    ],
+                        "correctAnswer":  "Paris",
+                        "openAiResponseId":  "resp_08884a85fa550f7d006a3c4ad673e081a08264d5ca9a127978",
+                        "error":  null
+                    },
+                    {
+                        "questionNumber":  15,
+                        "category":  "Geography",
+                        "difficulty":  "Medium",
+                        "latencySeconds":  1.894,
+                        "requestSucceeded":  true,
+                        "structureValid":  true,
+                        "question":  "Which desert is the largest hot desert in the world?",
+                        "hint":  "Think of the desert located in northern Africa.",
+                        "answers":  [
+                                        {
+                                            "text":  "Gobi Desert",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "Sahara Desert",
+                                            "isCorrect":  true
+                                        },
+                                        {
+                                            "text":  "Kalahari Desert",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "Atacama Desert",
+                                            "isCorrect":  false
+                                        }
+                                    ],
+                        "correctAnswer":  "Sahara Desert",
+                        "openAiResponseId":  "resp_08884a85fa550f7d006a3c4ad8bd4c81a08f893bce4d82a1ab",
+                        "error":  null
+                    },
+                    {
+                        "questionNumber":  16,
+                        "category":  "Geography",
+                        "difficulty":  "Medium",
+                        "latencySeconds":  1.535,
+                        "requestSucceeded":  true,
+                        "structureValid":  true,
+                        "question":  "Which mountain range separates Europe from Asia?",
+                        "hint":  "This mountain range is known for its dramatic peaks and has historical significance.",
+                        "answers":  [
+                                        {
+                                            "text":  "Andes",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "Rockies",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "Urals",
+                                            "isCorrect":  true
+                                        },
+                                        {
+                                            "text":  "Himalayas",
+                                            "isCorrect":  false
+                                        }
+                                    ],
+                        "correctAnswer":  "Urals",
+                        "openAiResponseId":  "resp_08884a85fa550f7d006a3c4adaa18081a094c70c7a16cd2554",
+                        "error":  null
+                    },
+                    {
+                        "questionNumber":  17,
+                        "category":  "Geography",
+                        "difficulty":  "Medium",
+                        "latencySeconds":  2.061,
+                        "requestSucceeded":  true,
+                        "structureValid":  true,
+                        "question":  "Which country has the most natural lakes?",
+                        "hint":  "This country is located in North America and is known for its vast wilderness.",
+                        "answers":  [
+                                        {
+                                            "text":  "Canada",
+                                            "isCorrect":  true
+                                        },
+                                        {
+                                            "text":  "Russia",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "United States",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "Brazil",
+                                            "isCorrect":  false
+                                        }
+                                    ],
+                        "correctAnswer":  "Canada",
+                        "openAiResponseId":  "resp_08884a85fa550f7d006a3c4adc2c6881a08acf8768be02de02",
+                        "error":  null
+                    },
+                    {
+                        "questionNumber":  18,
+                        "category":  "Geography",
+                        "difficulty":  "Hard",
+                        "latencySeconds":  2.22,
+                        "requestSucceeded":  true,
+                        "structureValid":  true,
+                        "question":  "What is the lowest point on land in the world?",
+                        "hint":  "This location is found near a famous body of water that is also one of the saltiest in the world.",
+                        "answers":  [
+                                        {
+                                            "text":  "Mariana Trench",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "Dead Sea",
+                                            "isCorrect":  true
+                                        },
+                                        {
+                                            "text":  "Great Barrier Reef",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "Lake Baikal",
+                                            "isCorrect":  false
+                                        }
+                                    ],
+                        "correctAnswer":  "Dead Sea",
+                        "openAiResponseId":  "resp_08884a85fa550f7d006a3c4ade3abc81a0837d5f82d1faec50",
+                        "error":  null
+                    },
+                    {
+                        "questionNumber":  19,
+                        "category":  "Geography",
+                        "difficulty":  "Hard",
+                        "latencySeconds":  1.616,
+                        "requestSucceeded":  true,
+                        "structureValid":  true,
+                        "question":  "Which country possesses the largest island in the world?",
+                        "hint":  "This country is located in the Arctic region and is known for its harsh climate and unique landscapes.",
+                        "answers":  [
+                                        {
+                                            "text":  "Australia",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "Denmark",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "Greenland",
+                                            "isCorrect":  true
+                                        },
+                                        {
+                                            "text":  "Canada",
+                                            "isCorrect":  false
+                                        }
+                                    ],
+                        "correctAnswer":  "Greenland",
+                        "openAiResponseId":  "resp_08884a85fa550f7d006a3c4ae0748481a0ac7deda300440086",
+                        "error":  null
+                    },
+                    {
+                        "questionNumber":  20,
+                        "category":  "Geography",
+                        "difficulty":  "Hard",
+                        "latencySeconds":  1.69,
+                        "requestSucceeded":  true,
+                        "structureValid":  true,
+                        "question":  "What is the name of the tectonic plate that includes most of North America?",
+                        "hint":  "This plate is associated with a major fault line known for earthquakes.",
+                        "answers":  [
+                                        {
+                                            "text":  "Eurasian Plate",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "African Plate",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "North American Plate",
+                                            "isCorrect":  true
+                                        },
+                                        {
+                                            "text":  "South American Plate",
+                                            "isCorrect":  false
+                                        }
+                                    ],
+                        "correctAnswer":  "North American Plate",
+                        "openAiResponseId":  "resp_08884a85fa550f7d006a3c4ae213d881a0b2437eedade7d5a1",
+                        "error":  null
+                    },
+                    {
+                        "questionNumber":  21,
+                        "category":  "Science",
+                        "difficulty":  "Easy",
+                        "latencySeconds":  1.845,
+                        "requestSucceeded":  true,
+                        "structureValid":  true,
+                        "question":  "What is the chemical symbol for water?",
+                        "hint":  "Think about the composition of water molecules.",
+                        "answers":  [
+                                        {
+                                            "text":  "H2O",
+                                            "isCorrect":  true
+                                        },
+                                        {
+                                            "text":  "CO2",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "O2",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "NaCl",
+                                            "isCorrect":  false
+                                        }
+                                    ],
+                        "correctAnswer":  "H2O",
+                        "openAiResponseId":  "resp_0556a0172a4aef39006a3c4ae3c360819fb2fdeeeec0dd5a92",
+                        "error":  null
+                    },
+                    {
+                        "questionNumber":  22,
+                        "category":  "Science",
+                        "difficulty":  "Easy",
+                        "latencySeconds":  1.864,
+                        "requestSucceeded":  true,
+                        "structureValid":  true,
+                        "question":  "What planet is known as the Red Planet?",
+                        "hint":  "This planet is often associated with the Roman god of war.",
+                        "answers":  [
+                                        {
+                                            "text":  "Mars",
+                                            "isCorrect":  true
+                                        },
+                                        {
+                                            "text":  "Jupiter",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "Venus",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "Saturn",
+                                            "isCorrect":  false
+                                        }
+                                    ],
+                        "correctAnswer":  "Mars",
+                        "openAiResponseId":  "resp_0556a0172a4aef39006a3c4ae59ce4819f918c7b27261237a0",
+                        "error":  null
+                    },
+                    {
+                        "questionNumber":  23,
+                        "category":  "Science",
+                        "difficulty":  "Easy",
+                        "latencySeconds":  2.997,
+                        "requestSucceeded":  true,
+                        "structureValid":  true,
+                        "question":  "What is the powerhouse of the cell?",
+                        "hint":  "This organelle is responsible for producing energy in the form of ATP.",
+                        "answers":  [
+                                        {
+                                            "text":  "Mitochondria",
+                                            "isCorrect":  true
+                                        },
+                                        {
+                                            "text":  "Nucleus",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "Ribosome",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "Endoplasmic Reticulum",
+                                            "isCorrect":  false
+                                        }
+                                    ],
+                        "correctAnswer":  "Mitochondria",
+                        "openAiResponseId":  "resp_0556a0172a4aef39006a3c4ae786a8819fa5ead969c3277fba",
+                        "error":  null
+                    },
+                    {
+                        "questionNumber":  24,
+                        "category":  "Science",
+                        "difficulty":  "Easy",
+                        "latencySeconds":  2.46,
+                        "requestSucceeded":  true,
+                        "structureValid":  true,
+                        "question":  "What gas do plants absorb from the atmosphere during photosynthesis?",
+                        "hint":  "This gas is essential for the process of converting sunlight into energy.",
+                        "answers":  [
+                                        {
+                                            "text":  "Carbon Dioxide",
+                                            "isCorrect":  true
+                                        },
+                                        {
+                                            "text":  "Oxygen",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "Nitrogen",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "Hydrogen",
+                                            "isCorrect":  false
+                                        }
+                                    ],
+                        "correctAnswer":  "Carbon Dioxide",
+                        "openAiResponseId":  "resp_0556a0172a4aef39006a3c4aea7960819f921abf313a4bfcb1",
+                        "error":  null
+                    },
+                    {
+                        "questionNumber":  25,
+                        "category":  "Science",
+                        "difficulty":  "Medium",
+                        "latencySeconds":  2.143,
+                        "requestSucceeded":  true,
+                        "structureValid":  true,
+                        "question":  "What is the primary component of the Earth\u0027s atmosphere?",
+                        "hint":  "This gas makes up about 78% of the atmosphere and is essential for life.",
+                        "answers":  [
+                                        {
+                                            "text":  "Nitrogen",
+                                            "isCorrect":  true
+                                        },
+                                        {
+                                            "text":  "Oxygen",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "Carbon Dioxide",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "Argon",
+                                            "isCorrect":  false
+                                        }
+                                    ],
+                        "correctAnswer":  "Nitrogen",
+                        "openAiResponseId":  "resp_0556a0172a4aef39006a3c4aecee50819f83676b4455aa8dbf",
+                        "error":  null
+                    },
+                    {
+                        "questionNumber":  26,
+                        "category":  "Science",
+                        "difficulty":  "Medium",
+                        "latencySeconds":  2.395,
+                        "requestSucceeded":  true,
+                        "structureValid":  true,
+                        "question":  "What type of bond involves the sharing of electron pairs between atoms?",
+                        "hint":  "This bond is commonly found in organic molecules and can affect their properties significantly.",
+                        "answers":  [
+                                        {
+                                            "text":  "Covalent Bond",
+                                            "isCorrect":  true
+                                        },
+                                        {
+                                            "text":  "Ionic Bond",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "Hydrogen Bond",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "Metallic Bond",
+                                            "isCorrect":  false
+                                        }
+                                    ],
+                        "correctAnswer":  "Covalent Bond",
+                        "openAiResponseId":  "resp_0556a0172a4aef39006a3c4aef1804819f89ef1234f5597fb9",
+                        "error":  null
+                    },
+                    {
+                        "questionNumber":  27,
+                        "category":  "Science",
+                        "difficulty":  "Medium",
+                        "latencySeconds":  2.396,
+                        "requestSucceeded":  true,
+                        "structureValid":  true,
+                        "question":  "What is the process by which substances transition from a gas to a liquid?",
+                        "hint":  "This process is often seen when dew forms on grass in the morning.",
+                        "answers":  [
+                                        {
+                                            "text":  "Condensation",
+                                            "isCorrect":  true
+                                        },
+                                        {
+                                            "text":  "Evaporation",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "Sublimation",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "Precipitation",
+                                            "isCorrect":  false
+                                        }
+                                    ],
+                        "correctAnswer":  "Condensation",
+                        "openAiResponseId":  "resp_0556a0172a4aef39006a3c4af17f68819fae853b63331b7a41",
+                        "error":  null
+                    },
+                    {
+                        "questionNumber":  28,
+                        "category":  "Science",
+                        "difficulty":  "Hard",
+                        "latencySeconds":  2.541,
+                        "requestSucceeded":  true,
+                        "structureValid":  true,
+                        "question":  "What is the name of the phenomenon where light bends as it passes from one medium to another?",
+                        "hint":  "This effect is commonly observed when you place a straw in a glass of water, and the straw appears to be bent.",
+                        "answers":  [
+                                        {
+                                            "text":  "Refraction",
+                                            "isCorrect":  true
+                                        },
+                                        {
+                                            "text":  "Reflection",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "Diffraction",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "Transmission",
+                                            "isCorrect":  false
+                                        }
+                                    ],
+                        "correctAnswer":  "Refraction",
+                        "openAiResponseId":  "resp_0556a0172a4aef39006a3c4af3e908819fa0e0985614ff5608",
+                        "error":  null
+                    },
+                    {
+                        "questionNumber":  29,
+                        "category":  "Science",
+                        "difficulty":  "Hard",
+                        "latencySeconds":  2.195,
+                        "requestSucceeded":  true,
+                        "structureValid":  true,
+                        "question":  "What is the name of the process by which a cell engulfs material from its environment?",
+                        "hint":  "This process is crucial for nutrient absorption and immune responses in cells.",
+                        "answers":  [
+                                        {
+                                            "text":  "Endocytosis",
+                                            "isCorrect":  true
+                                        },
+                                        {
+                                            "text":  "Exocytosis",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "Transcription",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "Diffusion",
+                                            "isCorrect":  false
+                                        }
+                                    ],
+                        "correctAnswer":  "Endocytosis",
+                        "openAiResponseId":  "resp_0556a0172a4aef39006a3c4af66aa4819f90e8da3d0be7e731",
+                        "error":  null
+                    },
+                    {
+                        "questionNumber":  30,
+                        "category":  "Science",
+                        "difficulty":  "Hard",
+                        "latencySeconds":  2.395,
+                        "requestSucceeded":  true,
+                        "structureValid":  true,
+                        "question":  "What is the scientific term for the effect that causes the observed frequency of a wave to change due to the motion of the source or observer?",
+                        "hint":  "This effect is often associated with sound waves, especially as an ambulance passes by.",
+                        "answers":  [
+                                        {
+                                            "text":  "Doppler Effect",
+                                            "isCorrect":  true
+                                        },
+                                        {
+                                            "text":  "Diffraction",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "Interference",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "Refraction",
+                                            "isCorrect":  false
+                                        }
+                                    ],
+                        "correctAnswer":  "Doppler Effect",
+                        "openAiResponseId":  "resp_0556a0172a4aef39006a3c4af8a0f4819fa1eedf22f36b53b8",
+                        "error":  null
+                    },
+                    {
+                        "questionNumber":  31,
+                        "category":  "Technology",
+                        "difficulty":  "Easy",
+                        "latencySeconds":  1.944,
+                        "requestSucceeded":  true,
+                        "structureValid":  true,
+                        "question":  "What is the primary function of a web browser?",
+                        "hint":  "Think about how you access and view information on the internet.",
+                        "answers":  [
+                                        {
+                                            "text":  "To send emails",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "To edit documents",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "To browse and view websites",
+                                            "isCorrect":  true
+                                        },
+                                        {
+                                            "text":  "To play video games",
+                                            "isCorrect":  false
+                                        }
+                                    ],
+                        "correctAnswer":  "To browse and view websites",
+                        "openAiResponseId":  "resp_0be1f5b22c4320f6006a3c4afb0390819e88fe49486af21251",
+                        "error":  null
+                    },
+                    {
+                        "questionNumber":  32,
+                        "category":  "Technology",
+                        "difficulty":  "Easy",
+                        "latencySeconds":  2.012,
+                        "requestSucceeded":  true,
+                        "structureValid":  true,
+                        "question":  "What does HTML stand for?",
+                        "hint":  "This acronym is commonly associated with the building blocks of web pages.",
+                        "answers":  [
+                                        {
+                                            "text":  "HyperText Markup Language",
+                                            "isCorrect":  true
+                                        },
+                                        {
+                                            "text":  "HighText Machine Language",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "Hyperlink and Text Markup Language",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "HyperText Multi Language",
+                                            "isCorrect":  false
+                                        }
+                                    ],
+                        "correctAnswer":  "HyperText Markup Language",
+                        "openAiResponseId":  "resp_0be1f5b22c4320f6006a3c4afcf630819eb766349faba00eb0",
+                        "error":  null
+                    },
+                    {
+                        "questionNumber":  33,
+                        "category":  "Technology",
+                        "difficulty":  "Easy",
+                        "latencySeconds":  2.018,
+                        "requestSucceeded":  true,
+                        "structureValid":  true,
+                        "question":  "Which company developed the Windows operating system?",
+                        "hint":  "Think of a tech giant known for its software and hardware.",
+                        "answers":  [
+                                        {
+                                            "text":  "Apple",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "Microsoft",
+                                            "isCorrect":  true
+                                        },
+                                        {
+                                            "text":  "Google",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "IBM",
+                                            "isCorrect":  false
+                                        }
+                                    ],
+                        "correctAnswer":  "Microsoft",
+                        "openAiResponseId":  "resp_0be1f5b22c4320f6006a3c4afefdfc819e95ce2c663c57fde2",
+                        "error":  null
+                    },
+                    {
+                        "questionNumber":  34,
+                        "category":  "Technology",
+                        "difficulty":  "Easy",
+                        "latencySeconds":  1.978,
+                        "requestSucceeded":  true,
+                        "structureValid":  true,
+                        "question":  "What does the acronym \u0027USB\u0027 stand for in technology?",
+                        "hint":  "Consider a common port used for connecting devices and transferring data.",
+                        "answers":  [
+                                        {
+                                            "text":  "Universal Serial Bus",
+                                            "isCorrect":  true
+                                        },
+                                        {
+                                            "text":  "United Service Bank",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "Universal Synchronous Bandwidth",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "Universal System Base",
+                                            "isCorrect":  false
+                                        }
+                                    ],
+                        "correctAnswer":  "Universal Serial Bus",
+                        "openAiResponseId":  "resp_0be1f5b22c4320f6006a3c4b010054819ea3dc09bb268ec497",
+                        "error":  null
+                    },
+                    {
+                        "questionNumber":  35,
+                        "category":  "Technology",
+                        "difficulty":  "Medium",
+                        "latencySeconds":  1.964,
+                        "requestSucceeded":  true,
+                        "structureValid":  true,
+                        "question":  "What is the main purpose of a VPN?",
+                        "hint":  "Think about how it helps maintain privacy and security online.",
+                        "answers":  [
+                                        {
+                                            "text":  "To increase internet speed",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "To provide public Wi-Fi access",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "To create a secure connection over the internet",
+                                            "isCorrect":  true
+                                        },
+                                        {
+                                            "text":  "To block advertisements",
+                                            "isCorrect":  false
+                                        }
+                                    ],
+                        "correctAnswer":  "To create a secure connection over the internet",
+                        "openAiResponseId":  "resp_0be1f5b22c4320f6006a3c4b02f70c819e81173a9416b9bac6",
+                        "error":  null
+                    },
+                    {
+                        "questionNumber":  36,
+                        "category":  "Technology",
+                        "difficulty":  "Medium",
+                        "latencySeconds":  1.901,
+                        "requestSucceeded":  true,
+                        "structureValid":  true,
+                        "question":  "Which programming language is known as the backbone of web development?",
+                        "hint":  "It\u0027s a language widely used for creating interactive websites.",
+                        "answers":  [
+                                        {
+                                            "text":  "Python",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "JavaScript",
+                                            "isCorrect":  true
+                                        },
+                                        {
+                                            "text":  "Java",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "C++",
+                                            "isCorrect":  false
+                                        }
+                                    ],
+                        "correctAnswer":  "JavaScript",
+                        "openAiResponseId":  "resp_0be1f5b22c4320f6006a3c4b04f380819ea64b9829a5a6e373",
+                        "error":  null
+                    },
+                    {
+                        "questionNumber":  37,
+                        "category":  "Technology",
+                        "difficulty":  "Medium",
+                        "latencySeconds":  2.486,
+                        "requestSucceeded":  true,
+                        "structureValid":  true,
+                        "question":  "What technology does \u00272FA\u0027 refer to in online security?",
+                        "hint":  "It\u0027s a method to enhance security by requiring two forms of identification.",
+                        "answers":  [
+                                        {
+                                            "text":  "Two-Factor Authentication",
+                                            "isCorrect":  true
+                                        },
+                                        {
+                                            "text":  "Two-Fold Algorithm",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "Two-File Access",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "Two-Factor Agreement",
+                                            "isCorrect":  false
+                                        }
+                                    ],
+                        "correctAnswer":  "Two-Factor Authentication",
+                        "openAiResponseId":  "resp_0be1f5b22c4320f6006a3c4b06d7e4819eae6202ff16ebede1",
+                        "error":  null
+                    },
+                    {
+                        "questionNumber":  38,
+                        "category":  "Technology",
+                        "difficulty":  "Hard",
+                        "latencySeconds":  1.998,
+                        "requestSucceeded":  true,
+                        "structureValid":  true,
+                        "question":  "What is the function of the \u0027root\u0027 user in a Unix/Linux system?",
+                        "hint":  "This account has the highest level of access and control over the system.",
+                        "answers":  [
+                                        {
+                                            "text":  "Regular user account",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "Guest account with limited permissions",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "Administrative account with full permissions",
+                                            "isCorrect":  true
+                                        },
+                                        {
+                                            "text":  "Account for managing network connections",
+                                            "isCorrect":  false
+                                        }
+                                    ],
+                        "correctAnswer":  "Administrative account with full permissions",
+                        "openAiResponseId":  "resp_0be1f5b22c4320f6006a3c4b095730819e921189ad53871428",
+                        "error":  null
+                    },
+                    {
+                        "questionNumber":  39,
+                        "category":  "Technology",
+                        "difficulty":  "Hard",
+                        "latencySeconds":  2.336,
+                        "requestSucceeded":  true,
+                        "structureValid":  true,
+                        "question":  "Which protocol is used for secure data transmission over a computer network?",
+                        "hint":  "Think about a layer that protects data sent over the internet, often seen in URLs starting with \u0027https\u0027.",
+                        "answers":  [
+                                        {
+                                            "text":  "FTP",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "HTTP",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "SSH",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "TLS/SSL",
+                                            "isCorrect":  true
+                                        }
+                                    ],
+                        "correctAnswer":  "TLS/SSL",
+                        "openAiResponseId":  "resp_0be1f5b22c4320f6006a3c4b0b563c819eadc9d49c2383addc",
+                        "error":  null
+                    },
+                    {
+                        "questionNumber":  40,
+                        "category":  "Technology",
+                        "difficulty":  "Hard",
+                        "latencySeconds":  2.844,
+                        "requestSucceeded":  true,
+                        "structureValid":  true,
+                        "question":  "What is the primary function of a DNS server in a network?",
+                        "hint":  "This system translates human-readable domain names into IP addresses.",
+                        "answers":  [
+                                        {
+                                            "text":  "To store website content",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "To block harmful websites",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "To convert domain names to IP addresses",
+                                            "isCorrect":  true
+                                        },
+                                        {
+                                            "text":  "To encrypt data transmitted online",
+                                            "isCorrect":  false
+                                        }
+                                    ],
+                        "correctAnswer":  "To convert domain names to IP addresses",
+                        "openAiResponseId":  "resp_0be1f5b22c4320f6006a3c4b0dab00819eb051039651b2653b",
+                        "error":  null
+                    },
+                    {
+                        "questionNumber":  41,
+                        "category":  "General Knowledge",
+                        "difficulty":  "Easy",
+                        "latencySeconds":  2.074,
+                        "requestSucceeded":  true,
+                        "structureValid":  true,
+                        "question":  "What is the capital of France?",
+                        "hint":  "This city is known for its iconic landmark, the Eiffel Tower.",
+                        "answers":  [
+                                        {
+                                            "text":  "Berlin",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "Madrid",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "Rome",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "Paris",
+                                            "isCorrect":  true
+                                        }
+                                    ],
+                        "correctAnswer":  "Paris",
+                        "openAiResponseId":  "resp_0bca7130b774c028006a3c4b1084dc8192a1dd1a252af02bda",
+                        "error":  null
+                    },
+                    {
+                        "questionNumber":  42,
+                        "category":  "General Knowledge",
+                        "difficulty":  "Easy",
+                        "latencySeconds":  1.819,
+                        "requestSucceeded":  true,
+                        "structureValid":  true,
+                        "question":  "Which planet is known as the Red Planet?",
+                        "hint":  "This planet is named after the Roman god of war.",
+                        "answers":  [
+                                        {
+                                            "text":  "Mars",
+                                            "isCorrect":  true
+                                        },
+                                        {
+                                            "text":  "Jupiter",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "Venus",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "Saturn",
+                                            "isCorrect":  false
+                                        }
+                                    ],
+                        "correctAnswer":  "Mars",
+                        "openAiResponseId":  "resp_0bca7130b774c028006a3c4b12a2788192b6a1c479e08fa118",
+                        "error":  null
+                    },
+                    {
+                        "questionNumber":  43,
+                        "category":  "General Knowledge",
+                        "difficulty":  "Easy",
+                        "latencySeconds":  2.973,
+                        "requestSucceeded":  true,
+                        "structureValid":  true,
+                        "question":  "What is the largest mammal in the world?",
+                        "hint":  "This animal can weigh as much as 200 tons and is found in oceans.",
+                        "answers":  [
+                                        {
+                                            "text":  "Elephant",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "Blue Whale",
+                                            "isCorrect":  true
+                                        },
+                                        {
+                                            "text":  "Giraffe",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "Great White Shark",
+                                            "isCorrect":  false
+                                        }
+                                    ],
+                        "correctAnswer":  "Blue Whale",
+                        "openAiResponseId":  "resp_0bca7130b774c028006a3c4b157eb4819295b4b8ad0a0c4da4",
+                        "error":  null
+                    },
+                    {
+                        "questionNumber":  44,
+                        "category":  "General Knowledge",
+                        "difficulty":  "Easy",
+                        "latencySeconds":  1.804,
+                        "requestSucceeded":  true,
+                        "structureValid":  true,
+                        "question":  "What is the main ingredient in guacamole?",
+                        "hint":  "This green fruit is often mashed and seasoned to make the dip.",
+                        "answers":  [
+                                        {
+                                            "text":  "Tomato",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "Avocado",
+                                            "isCorrect":  true
+                                        },
+                                        {
+                                            "text":  "Onion",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "Pepper",
+                                            "isCorrect":  false
+                                        }
+                                    ],
+                        "correctAnswer":  "Avocado",
+                        "openAiResponseId":  "resp_0bca7130b774c028006a3c4b1763248192a5f1a47edf845d86",
+                        "error":  null
+                    },
+                    {
+                        "questionNumber":  45,
+                        "category":  "General Knowledge",
+                        "difficulty":  "Medium",
+                        "latencySeconds":  1.871,
+                        "requestSucceeded":  true,
+                        "structureValid":  true,
+                        "question":  "Who wrote the play \u0027Romeo and Juliet\u0027?",
+                        "hint":  "This playwright is often referred to as the Bard of Avon.",
+                        "answers":  [
+                                        {
+                                            "text":  "Charles Dickens",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "George Bernard Shaw",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "William Shakespeare",
+                                            "isCorrect":  true
+                                        },
+                                        {
+                                            "text":  "Mark Twain",
+                                            "isCorrect":  false
+                                        }
+                                    ],
+                        "correctAnswer":  "William Shakespeare",
+                        "openAiResponseId":  "resp_0bca7130b774c028006a3c4b192fb48192810ed717739f18f6",
+                        "error":  null
+                    },
+                    {
+                        "questionNumber":  46,
+                        "category":  "General Knowledge",
+                        "difficulty":  "Medium",
+                        "latencySeconds":  1.566,
+                        "requestSucceeded":  true,
+                        "structureValid":  true,
+                        "question":  "What is the largest organ in the human body?",
+                        "hint":  "This organ acts as a barrier to protect the body and regulates temperature.",
+                        "answers":  [
+                                        {
+                                            "text":  "Heart",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "Liver",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "Skin",
+                                            "isCorrect":  true
+                                        },
+                                        {
+                                            "text":  "Lungs",
+                                            "isCorrect":  false
+                                        }
+                                    ],
+                        "correctAnswer":  "Skin",
+                        "openAiResponseId":  "resp_0bca7130b774c028006a3c4b1b0f948192812f45d91d47844e",
+                        "error":  null
+                    },
+                    {
+                        "questionNumber":  47,
+                        "category":  "General Knowledge",
+                        "difficulty":  "Medium",
+                        "latencySeconds":  2.593,
+                        "requestSucceeded":  true,
+                        "structureValid":  true,
+                        "question":  "Which element has the chemical symbol \u0027O\u0027?",
+                        "hint":  "This element is essential for breathing and is often found in water.",
+                        "answers":  [
+                                        {
+                                            "text":  "Osmium",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "Oxygen",
+                                            "isCorrect":  true
+                                        },
+                                        {
+                                            "text":  "Gold",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "Carbon",
+                                            "isCorrect":  false
+                                        }
+                                    ],
+                        "correctAnswer":  "Oxygen",
+                        "openAiResponseId":  "resp_0bca7130b774c028006a3c4b1ca34c8192b65b419464a335ab",
+                        "error":  null
+                    },
+                    {
+                        "questionNumber":  48,
+                        "category":  "General Knowledge",
+                        "difficulty":  "Hard",
+                        "latencySeconds":  1.906,
+                        "requestSucceeded":  true,
+                        "structureValid":  true,
+                        "question":  "What is the term for a word that is similar in meaning to another word?",
+                        "hint":  "These words can often be used interchangeably, depending on context.",
+                        "answers":  [
+                                        {
+                                            "text":  "Antonym",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "Homonym",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "Synonym",
+                                            "isCorrect":  true
+                                        },
+                                        {
+                                            "text":  "Acronym",
+                                            "isCorrect":  false
+                                        }
+                                    ],
+                        "correctAnswer":  "Synonym",
+                        "openAiResponseId":  "resp_0bca7130b774c028006a3c4b1f3a98819295442f02fe64ca56",
+                        "error":  null
+                    },
+                    {
+                        "questionNumber":  49,
+                        "category":  "General Knowledge",
+                        "difficulty":  "Hard",
+                        "latencySeconds":  2.294,
+                        "requestSucceeded":  true,
+                        "structureValid":  true,
+                        "question":  "What is the capital of Iceland?",
+                        "hint":  "This city is known for its beautiful landscapes and geothermal activity.",
+                        "answers":  [
+                                        {
+                                            "text":  "Copenhagen",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "Oslo",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "Reykjavik",
+                                            "isCorrect":  true
+                                        },
+                                        {
+                                            "text":  "Stockholm",
+                                            "isCorrect":  false
+                                        }
+                                    ],
+                        "correctAnswer":  "Reykjavik",
+                        "openAiResponseId":  "resp_0bca7130b774c028006a3c4b2120f08192934081e9a00de4a0",
+                        "error":  null
+                    },
+                    {
+                        "questionNumber":  50,
+                        "category":  "General Knowledge",
+                        "difficulty":  "Hard",
+                        "latencySeconds":  1.739,
+                        "requestSucceeded":  true,
+                        "structureValid":  true,
+                        "question":  "What is the name of the longest river in South America?",
+                        "hint":  "This river flows through countries like Peru and Brazil and is known for its vast rainforests.",
+                        "answers":  [
+                                        {
+                                            "text":  "Amazon River",
+                                            "isCorrect":  true
+                                        },
+                                        {
+                                            "text":  "Nile River",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "Yangtze River",
+                                            "isCorrect":  false
+                                        },
+                                        {
+                                            "text":  "Mississippi River",
+                                            "isCorrect":  false
+                                        }
+                                    ],
+                        "correctAnswer":  "Amazon River",
+                        "openAiResponseId":  "resp_0bca7130b774c028006a3c4b236f2c8192b67ae47417c8c3d5",
+                        "error":  null
+                    }
+                ]
+}

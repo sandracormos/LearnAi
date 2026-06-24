@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="480" viewBox="0 0 1500 480">
+  <defs>
+    <style>
+      .title { font: 700 38px Arial, sans-serif; fill: #172033; }
+      .name { font: 700 23px Arial, sans-serif; fill: #172033; }
+      .box { stroke: #344054; stroke-width: 3; rx: 20; }
+      .arrow { stroke: #344054; stroke-width: 4; fill: none; marker-end: url(#arrow); }
+    </style>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0,0 L12,6 L0,12 z" fill="#344054"/>
+    </marker>
+  </defs>
+
+  <rect width="1500" height="480" fill="#f8fafc"/>
+  <text x="750" y="62" text-anchor="middle" class="title">Fluxul generării unei întrebări</text>
+
+  <rect x="40" y="190" width="230" height="120" class="box" fill="#dbeafe"/>
+  <text x="155" y="260" text-anchor="middle" class="name">Frontend</text>
+
+  <rect x="335" y="190" width="250" height="120" class="box" fill="#ede9fe"/>
+  <text x="460" y="260" text-anchor="middle" class="name">ASP.NET Core</text>
+
+  <rect x="650" y="190" width="220" height="120" class="box" fill="#dcfce7"/>
+  <text x="760" y="260" text-anchor="middle" class="name">OpenAI</text>
+
+  <rect x="935" y="190" width="270" height="120" class="box" fill="#fef3c7"/>
+  <text x="1070" y="260" text-anchor="middle" class="name">Parser și Validator</text>
+
+  <rect x="1270" y="190" width="190" height="120" class="box" fill="#dbeafe"/>
+  <text x="1365" y="260" text-anchor="middle" class="name">Frontend</text>
+
+  <path d="M270 250 H335" class="arrow"/>
+  <path d="M585 250 H650" class="arrow"/>
+  <path d="M870 250 H935" class="arrow"/>
+  <path d="M1205 250 H1270" class="arrow"/>
+</svg>

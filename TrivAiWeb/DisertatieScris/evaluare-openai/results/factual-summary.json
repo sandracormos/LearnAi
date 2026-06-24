@@ -1,0 +1,11 @@
+﻿{
+    "totalQuestions":  50,
+    "reviewedQuestions":  50,
+    "pendingQuestions":  0,
+    "correctQuestions":  43,
+    "incorrectQuestions":  2,
+    "ambiguousQuestions":  5,
+    "factualAccuracyPercent":  86,
+    "reviewedRowsMissingSource":  0,
+    "publishable":  true
+}

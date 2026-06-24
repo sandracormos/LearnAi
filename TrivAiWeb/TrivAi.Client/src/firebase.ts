@@ -146,41 +146,6 @@ export type LeaderboardEntry = {
   score: number;
 };
 
-const demoLeaderboardNames = [
-  'Nova',
-  'Pixel',
-  'Astra',
-  'RoboFan',
-  'Quizzer',
-  'Orbit',
-  'Luna',
-  'Byte',
-  'Echo',
-  'Vector',
-  'Mira',
-  'Zen'
-];
-
-function createDemoLeaderboardEntries(count = 10): LeaderboardEntry[] {
-  const names = [...demoLeaderboardNames].sort(() => Math.random() - 0.5).slice(0, count);
-
-  return names
-    .map((displayName, index) => {
-      const platformScore = 900 + Math.floor(Math.random() * 900);
-      const level = Math.max(1, Math.min(20, Math.floor(platformScore / 120)));
-      const score = Math.max(0, platformScore - level * 100);
-
-      return {
-        uid: `demo-${index + 1}`,
-        displayName,
-        platformScore,
-        level,
-        score
-      };
-    })
-    .sort((left, right) => right.platformScore - left.platformScore);
-}
-
 export type CompletedSession = {
   categories: string;
   difficulty: string;
@@ -854,8 +819,7 @@ function mapCustomTestDates<T extends { updatedAt?: Date; publishedAt?: Date }>(
 
 export async function getLeaderboard(): Promise<LeaderboardEntry[]> {
   const { db } = requireFirebase();
-  const leaderboardQuery = query(collection(db, 'leaderboard'), orderBy('platformScore', 'desc'), limit(10));
-  const snapshot = await getDocs(leaderboardQuery);
+  const snapshot = await getDocs(collection(db, 'leaderboard'));
 
   const realEntries = snapshot.docs.map((entry) => {
     const data = entry.data();
@@ -868,14 +832,22 @@ export async function getLeaderboard(): Promise<LeaderboardEntry[]> {
     };
   });
 
-  if (realEntries.length >= 10) {
-    return realEntries;
-  }
+  return realEntries
+    .sort((left, right) => {
+      if (right.platformScore !== left.platformScore) {
+        return right.platformScore - left.platformScore;
+      }
 
-  const usedNames = new Set(realEntries.map((entry) => entry.displayName));
-  const fillerEntries = createDemoLeaderboardEntries(10)
-    .filter((entry) => !usedNames.has(entry.displayName))
-    .slice(0, Math.max(0, 10 - realEntries.length));
+      if (right.level !== left.level) {
+        return right.level - left.level;
+      }
 
-  return [...realEntries, ...fillerEntries].sort((left, right) => right.platformScore - left.platformScore);
+      if (right.score !== left.score) {
+        return right.score - left.score;
+      }
+
+      const nameOrder = left.displayName.localeCompare(right.displayName);
+      return nameOrder !== 0 ? nameOrder : left.uid.localeCompare(right.uid);
+    })
+    .slice(0, 10);
 }

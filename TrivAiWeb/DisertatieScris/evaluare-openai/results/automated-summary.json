@@ -1,0 +1,14 @@
+﻿{
+    "generatedAt":  "2026-06-25T00:24:51.8713716+03:00",
+    "endpoint":  "http://127.0.0.1:5238/api/trivia/question",
+    "model":  "gpt-4o-mini",
+    "plannedQuestions":  50,
+    "successfulRequests":  50,
+    "failedRequests":  0,
+    "structurallyValidResponses":  50,
+    "structuralCompliancePercent":  100,
+    "averageLatencySeconds":  2.154,
+    "medianLatencySeconds":  2.018,
+    "p95LatencySeconds":  2.844,
+    "factualReviewStatus":  "Pending manual verification with cited sources"
+}
